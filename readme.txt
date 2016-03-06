@@ -8,3 +8,5 @@ Oh, I forgot something.
 
 I am about to use the "git diff" command.
 
+This is the last line.
+
