@@ -1,17 +1,18 @@
 #~ #This is yet to begin.
 import os
 
-def data_downloader(readIn = "FALSE", symbol = None, startDate = None,
-					endDate = None, outputPath = None,inputPath = None,
-					inputFileName = None, outputFileName = None, 
-					intraday = "FALSE", message = "FALSE"):
+def data_downloader(readIn = "FALSE", readOut = "FALSE", intraday = "FALSE", symbol = None, 
+					startDate = None, endDate = None, outputPath = None,
+					inputPathName = None, outputPathName = None, 
+					outputSymbol = None, inputFileName = None, 
+					outputFileName = None, message = "FALSE"):
 						
 	# read_in: if set to "TRUE" the code will use the given text file 
 	# to read in symbols from that file. Note that the user MUST provide
-	# a path (i.e. inputPath) so the machine can find the file. Note that
+	# a path (i.e. inputPathName) so the machine can find the file. Note that
 	# if user sets the readIN option to "FALSE" a list of symbols MUST be
 	# provided for the symbol argument (see below).
-	# inputPath: is the path to the text file that this code will use to 
+	# inputPathName: is the path to the text file that this code will use to 
 	# read in the symbols from the file (see above).
 	# symbol: a list of symbols.
 	# start_Date, end_Date: a date of the 'yyyy-mm-dd' format with 
@@ -25,7 +26,8 @@ def data_downloader(readIn = "FALSE", symbol = None, startDate = None,
 	# message: if set to "TRUE" it prints out some information a long 
 	# the procedure such as the data of what symbol is downloading. The 
 	# default is "FALSE" so it does NOT print out anything.
-	
+	# outputSymbol: is a list.
+	# outputFileName: is a file name.
 	
 	#doc string
 	# to run this function the following modules have to be installed.
@@ -54,87 +56,100 @@ def data_downloader(readIn = "FALSE", symbol = None, startDate = None,
 	
 	# Things to do for tomorrow:
 	# 1- url section needs to be shortened.
-	# 2- the rest nameFile section needs to be reviewed and think about
+	# 2- the nameFile section needs to be reviewed and think about
 	# adding a new argument as the list of the output names.
 	
 #	type(datetime.datetime.strftime(datetime.datetime.fromtimestamp(1457706672), "%Y-%m-%d"))
 #	<type 'str'>
-
-#	http://chartapi.finance.yahoo.com/instrument/1.0/GOOG/chartdata;type=quote;range=1d/csv
 	
 	import os
 	import sys
 	import time
 	import urllib2
 
-#	outputPath = '~/nozhan/science/computation/data/finance/output/code/pyzhance/data_downloader'
-		
-	if readIn == "TRUE":
-		if inputPath is None:
-			file = os.path.join(os.getcwd(),inputFileName)
-		elif inputPath is not None:
-			file = os.path.join(inputPath,inputFileName)
-		symbolRead = open(file,'r')
-		symbol = []
-		for line in symbolRead:
-			symbol.append(line.strip()) # The strip command removes 
-		symbolRead.close()				# unwanted empty space of each
-		#~ print(symbol)					# line when it is reading the file.
-		#~ sys.exit("********It worked just fine.*******")
-	
 	if outputPath is None:
 		outputPath = os.getcwd()
-	
-	if inputPath is None:
-		inputPath = os.getcwd()
+	elif outputPath is not None:
+		outputPath = os.path.expanduser(outputPath)
+	if inputPathName is None:
+		inputPathName = os.getcwd()
+		
+	if readIn == "TRUE":
+		if inputPathName is None:
+			file = os.path.join(os.getcwd(),inputFileName)
+		elif inputPathName is not None:
+			file = os.path.join(os.path.expanduser(inputPathName),inputFileName)
+		symbolToRead = open(file,'r')
+		symbol = []
+		for line in symbolToRead:
+			symbol.append(line.strip()) # The strip command removes 
+		symbolToRead.close()			# unwanted empty space of each
+										# line when it is reading the file.
 
-
-	outPath = os.path.join(outputPath)
-	sDate = startDate.split("-")
-	a = str(int(sDate[1]) - 1)	# month (I added a -1 so it matched the yahoo format)
-	b = sDate[2]	# day
-	c = sDate[0]	# year
-	eDate = endDate.split("-")
-	d = str(int(eDate[1]) - 1)	# month (same as above)
-	e = eDate[2]	# day
-	f = eDate[0]	# year
-	storeName = []
+	if readOut == "TRUE":
+		if outputPathName is None:
+			file = os.path.join(os.getcwd(), outputFileName)
+		elif outputPathName is not None:
+			file = os.path.join(os.path.expanduser(outputPathName), outputFileName)
+		outName = open(file, "r")
+		outputSymbol = []
+		for outline in outName:
+			outputSymbol.append(outline.strip())
+		outName.close()
+		
+	if readIn == "TRUE":
+		if readOut == "FALSE":
+			outputSymbol = symbol
 	
-	if fileName is None:
-		fileName = symbol
 	if intraday == "FALSE":
-		for sym in fileName:
-			storeName.extend([sym])
-			file = outPath + sym + ".csv"
-			downloadFile = open(file, "w")
+		outPath = os.path.join(outputPath)
+		sDate = startDate.split("-")
+		a = str(int(sDate[1]) - 1)	# month (I added a -1 so it matched the yahoo format)
+		b = sDate[2]	# day
+		c = sDate[0]	# year
+		eDate = endDate.split("-")
+		d = str(int(eDate[1]) - 1)	# month (same as above)
+		e = eDate[2]	# day
+		f = eDate[0]	# year
+		counter = 0
+		for sym in symbol:
+			file = os.path.join(outputPath, outputSymbol[counter] + ".csv")
+			downloadFile = open(file, "w") # if you use "a" (i.e. append) instead of "w" every time user runs the code the new 
+											# data will be added to the file without removing the old one.
 			urlToRead = "http://real-chart.finance.yahoo.com/table.csv?s="+sym+"&a="+a+"&b="+b+"&c="+c+"&d="+d+"&e="+e+"&f="+f+"&g=d&ignore=.csv"
-			sourceCode = urllib2.urlopen(urlToRead).read()
-			downloadFile.write(sourceCode)
+			sourceCode = urllib2.urlopen(urlToRead).read()	# The readline(), read() or readlines() command open the file
+			# object generated by the urllib2.urlopen() and that is why we use one of those command to open the file and then 
+			# write the file into another file (the one user intends to be filled).
+			#for line in sourceCode
+			#print One, "This is ONE"
+			downloadFile.write(sourceCode+'\n')
 			downloadFile.close()
 			if message == "TRUE":
 				print
-				print(sym+".csv ---> downloaded")
+				print(sym + ".csv ---> downloaded")
 				print
+			counter += 1
 	if intraday == "TRUE":
-		for sym in fileName:
-			storeName.append(sym)
-			file = outPath + sym + ".csv"
-#			downloadFile = open(file, "w")
+		counter = 0
+		for sym in symbol:
+			file = os.path.join(outputPath, outputSymbol[counter] + ".csv")
+			downloadFile = open(file, "w")
 			urlToRead = "http://chartapi.finance.yahoo.com/instrument/1.0/"+sym+"/chartdata;type=quote;range=1d/csv"
 			sourceCode = urllib2.urlopen(urlToRead).read()
-#			downloadfile = file.write(sourceCode.read())
-			
-			#######
 			splitSource = sourceCode.split('\n')
 			for eachLine in splitSource:
 				if len(eachLine.split(',')) == 6:
 					if 'values' not in eachLine:
-						downloadFile = open(file, "a")
 						downloadFile.write(eachLine+'\n')
-			print('pulled', sym)
-			print('sleeping')
-			time.sleep(3)
+			downloadFile.close()
 			
+			if message == "TRUE":
+				print(sym + ".csv", " ---> downloaded ")
+				#print('sleeping')
+				
+			time.sleep(2)
+			counter += 1
+		
 			
 			
 			
