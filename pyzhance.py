@@ -160,7 +160,7 @@ def data_downloader(readIn = "FALSE", readOut = "FALSE", intraday = "FALSE", sym
 			
 			
 '''			
-def datetime_convertor(input_file = None, column_number = None, 
+def data_slicer(input_file = None, column_number = None, 
 						outputPath = os.getcwd(), input_format = None, 
 						output_format = None, output_file = None):
 	import numpy
