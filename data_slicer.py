@@ -1,17 +1,105 @@
-	
-			
-def data_slicer(input_file = None, column_number = None, 
-						outputPath = os.getcwd(), input_format = None, 
-						output_format = None, output_file = None):
-	import numpy
-	import datetime
+
 	# name of the file
 	# name/number of the column(s)
 	# format to read (format of the input data)
 	# format to convert to (format of the output data)
 	# name of the file to be written to (the output file)
 	
-	for name in input_file:
-		for column in column_number:
-			numpy.genfromtxt(fname = input_file, usecols = column_number)
+	#	1- Find me "yyyy-mm-dd" (as the start date) and "yyyy-mm-dd" 
+	#	(as the end date) and convert them to numbers to find me the 
+	#	followings:
 	
+	#	Note: There should be an option so the user can indicate whether
+	#	they are using interaday or non-intraday data.
+	
+	#	Note: If the given slice does NOT exist in data file the code 
+	#	should be able to find the nearest (after or before) day of data
+	#	file. And this should be included in the documentation of the 
+	#	code.
+	
+	#	---> Note: a list of input(s) can be given and a list of output(s) 
+	#	can be returned by the function (think about it). <---
+	
+	#	2- The user should be asked if they want the related information
+	#	in the slice or there are more than one slice? Only for one year
+	#	(e.g. the current year), every month of the year(s) (e.g. every 
+	#	first week of every month of the year(s)) or every couple of days 
+	#	of the specific weeks of specific months of specefic years? All 
+	#	in all, the user should have to freedom to give the smallest 
+	#	slice possible (one day) for a specific week, month and year. 
+	#	e.g. What day(s) (i.e. smallest slice)? what month(s)? What 
+	#	year(s)?
+	#	Note that in case of one day the code should be able to take in
+	#	only one day.
+	
+	#	3- Once you have found the above slice(s) write out all the 
+	#	data (open, close, low, ...) in this interval along with the 
+	#	converted date column.
+	#	In case of several slices the cose has to be able to write out 
+	#	the result in one file but append the results of each interval.
+	
+	#	PHASE TWO:
+	
+	#	1- Print out those days in a given interval (e.g. for every 
+	#	first week of the month)that eithre one or more that one column
+	#	(depending what user wants) of the input data file (open, close,
+	#	 low, high, volume)  is higher or lower than that value.
+	
+	#	2- The above line should be applicable to extract the intended 
+	#	days based on other ... (I am not sure what I want)!!!
+	#	
+
+
+	#	Things to do for tomorrow:
+	#	
+	#	1- write my own string date	to numeric date converter function.
+	#	2- Correct the TRUE and FALSE in the data_downloader file.
+
+import os
+
+def data_slicer(inputFileName = None, startDate = None, endDate = None,
+				outputPath = None, inputPathName = None, 
+				output_format = None, outputFileName = None, 
+				write = False):
+		
+		#	write = if "TRUE" the code will write out the result to a 
+		#	file. The default is "FALSE".
+		
+		#	Date,Open,High,Low,Close,Volume,Adj Close
+		
+	import os
+	import numpy
+	import datetime
+	from matplotlib.dates import strpdate2num
+		
+	if inputPathName is not None:
+		fileName = os.path.join(os.path.expanduser(inputPathName),inputFileName)
+	
+	#	NOTE: Do NOT use the dtype arguemtn or you will get the "Too many
+	#	values to unpack". The best way is to use the "strpdate2num" function 
+	#	and the "converters" argument as follows.
+	
+	date, open, high, low, close, volume, adClose = numpy.genfromtxt(fname = fileName, 
+	delimiter = ',', unpack = True, converters = {0:strpdate2num('%Y-%m-%d')})
+			
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		

@@ -100,9 +100,10 @@ def data_downloader(readIn = "FALSE", readOut = "FALSE", intraday = "FALSE", sym
 			outputSymbol.append(outline.strip())
 		outName.close()
 		
-	if readIn == "TRUE":
-		if readOut == "FALSE":
-			outputSymbol = symbol
+	if readIn == "TRUE" and readOut == "FALSE":
+		outputSymbol = symbol
+	if readIn == "FALSE" and readOut == "FALSE":
+		outputSymbol = symbol
 	
 	if intraday == "FALSE":
 		outPath = os.path.join(outputPath)
