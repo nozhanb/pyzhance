@@ -57,7 +57,7 @@
 
 import os
 
-def data_slicer(inputFileName = None, startDate = None, endDate = None,
+def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None, startDate = None, endDate = None,
 				outputPath = None, inputPathName = None, 
 				output_format = None, outputFileName = None, 
 				write = False):
@@ -74,15 +74,32 @@ def data_slicer(inputFileName = None, startDate = None, endDate = None,
 		
 	if inputPathName is not None:
 		fileName = os.path.join(os.path.expanduser(inputPathName),inputFileName)
+	if inputPathName is None:
+		fileName = os.path.join(os.getcwd(),inputFileName)
+		
+	def date_converter(ruze):
+		convertedDate = datetime.datetime.strptime(ruze,dateFormat)
+		#print convertedDate
+		ordinalDate = datetime.date.toordinal(convertedDate)
+		#print ordinalDate
+		return ordinalDate
+		
 	
+#	ruze = date_converter(x,dateFormat)
+
 	#	NOTE: Do NOT use the dtype arguemtn or you will get the "Too many
 	#	values to unpack". The best way is to use the "strpdate2num" function 
 	#	and the "converters" argument as follows.
 	
-	date, open, high, low, close, volume, adClose = numpy.genfromtxt(fname = fileName, 
-	delimiter = ',', unpack = True, converters = {0:strpdate2num('%Y-%m-%d')})
-			
-		
+	dataArray = numpy.genfromtxt(fname = fileName, delimiter = ",", 
+	dtype = [('date','i4'),('open','f3'),('high','f3'),('low','f3'),
+	('close','f3'),('volume','i4'),('adjclose','f3')],converters = {0:date_converter})
+	
+	date = []
+	open = []
+	date = dataArray['date']
+	open = dataArray['open']
+	print (date,open)
 		
 		
 		
