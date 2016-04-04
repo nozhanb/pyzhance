@@ -57,10 +57,10 @@
 
 import os
 
-def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None, startDate = None, endDate = None,
-				outputPath = None, inputPathName = None, 
-				output_format = None, outputFileName = None, 
-				write = False):
+def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None, Date = None,
+				startDate = None, endDate = None, outputPath = None, 
+				inputPathName = None, output_format = None, 
+				outputFileName = None, write = False):
 		
 		#	write = if "TRUE" the code will write out the result to a 
 		#	file. The default is "FALSE".
@@ -70,22 +70,18 @@ def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None, startDate = None,
 	import os
 	import numpy
 	import datetime
-	from matplotlib.dates import strpdate2num
 		
 	if inputPathName is not None:
 		fileName = os.path.join(os.path.expanduser(inputPathName),inputFileName)
 	if inputPathName is None:
 		fileName = os.path.join(os.getcwd(),inputFileName)
 		
-	def date_converter(ruze):
-		convertedDate = datetime.datetime.strptime(ruze,dateFormat)
-		#print convertedDate
+	def date_converter(tag): # tag: German word for day.
+		convertedDate = datetime.datetime.strptime(tag,dateFormat)
 		ordinalDate = datetime.date.toordinal(convertedDate)
-		#print ordinalDate
-		return ordinalDate
-		
+		return ordinalDate		
 	
-#	ruze = date_converter(x,dateFormat)
+#	tag = date_converter(x,dateFormat)
 
 	#	NOTE: Do NOT use the dtype arguemtn or you will get the "Too many
 	#	values to unpack". The best way is to use the "strpdate2num" function 
@@ -97,26 +93,36 @@ def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None, startDate = None,
 	
 	date = []
 	open = []
+	high = []
+	low = []
+	close = []
+	volume = []
+	adjclose = []
+	
 	date = dataArray['date']
 	open = dataArray['open']
-	print (date,open)
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+	high = dataArray['high']
+	low = dataArray['low']
+	close = dataArray['close']
+	volume = dataArray['volume']
+	adjclose = dataArray['adjclose']
+	
+	for pair in Date:
+		ordinalStartDate = datetime.date.toordinal(datetime.datetime.strptime(pair[0],dateFormat))
+		ordinalEndDate = datetime.date.toordinal(datetime.datetime.strptime(pair[1],dateFormat))
+		print (ordinalStartDate, ordinalEndDate)
+		startDateIndex = numpy.where(date == ordinalStartDate)
+		endDateIndex = numpy.where(date == ordinalEndDate)
+		indexLength = abs(endDateIndex[0] - startDateIndex[0])
+		print (startDateIndex, endDateIndex, indexLength)
+	
+		emptyArray = numpy.empty(shape = 0, dtype = int)
+		counter = 0
+		for i in range(0, indexLength + 1):
+			if counter < indexLength + 1:
+				slicedDate = numpy.append(emptyArray, date[endDateIndex[0] + i])
+			emptyArray = slicedDate
+			counter += 1
+		print slicedDate, slicedDate.shape, date.shape, type(slicedDate)	
 		
 		
