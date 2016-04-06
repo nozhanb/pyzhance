@@ -52,15 +52,21 @@
 
 	#	Things to do for tomorrow:
 	#	
-	#	1- write my own string date	to numeric date converter function.
-	#	2- Correct the TRUE and FALSE in the data_downloader file.
+	#	1- Correct the TRUE and FALSE in the data_downloader file.
+	#	2- The input should be a list of arrays where each array 
+	#		represents days, months and years.
+	#	3- Output should be same as input.
+	#	4- Add the line that tells the user that the given date does not
+	#		exist in the file and replace the ouput value with a NoData.
+	
 
 import os
 
-def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None, Date = None,
+def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None, sDate = None,
 				startDate = None, endDate = None, outputPath = None, 
 				inputPathName = None, output_format = None, 
-				outputFileName = None, write = False):
+				outputFileName = None, write = False, month = None, 
+				year = None):
 		
 		#	write = if "TRUE" the code will write out the result to a 
 		#	file. The default is "FALSE".
@@ -107,22 +113,24 @@ def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None, Date = None,
 	volume = dataArray['volume']
 	adjclose = dataArray['adjclose']
 	
-	for pair in Date:
-		ordinalStartDate = datetime.date.toordinal(datetime.datetime.strptime(pair[0],dateFormat))
-		ordinalEndDate = datetime.date.toordinal(datetime.datetime.strptime(pair[1],dateFormat))
-		print (ordinalStartDate, ordinalEndDate)
-		startDateIndex = numpy.where(date == ordinalStartDate)
-		endDateIndex = numpy.where(date == ordinalEndDate)
-		indexLength = abs(endDateIndex[0] - startDateIndex[0])
-		print (startDateIndex, endDateIndex, indexLength)
+
+	for yea in year:
+		for mon in month:
+			for pair in sDate:
+				ordinalStartDate = datetime.date.toordinal(datetime.datetime.strptime(datetime.date(yea, mon, pair[0]).strftime(dateFormat), dateFormat))
+				ordinalEndDate = datetime.date.toordinal(datetime.datetime.strptime(datetime.date(yea, mon, pair[1]).strftime(dateFormat), dateFormat))
+				print (ordinalStartDate, ordinalEndDate)
+				startDateIndex = numpy.where(date == ordinalStartDate)
+				endDateIndex = numpy.where(date == ordinalEndDate)
+				indexLength = abs(endDateIndex[0] - startDateIndex[0])
+				print (startDateIndex, endDateIndex, indexLength)
 	
-		emptyArray = numpy.empty(shape = 0, dtype = int)
-		counter = 0
-		for i in range(0, indexLength + 1):
-			if counter < indexLength + 1:
-				slicedDate = numpy.append(emptyArray, date[endDateIndex[0] + i])
-			emptyArray = slicedDate
-			counter += 1
-		print slicedDate, slicedDate.shape, date.shape, type(slicedDate)	
-		
+				emptyArray = numpy.empty(shape = 0, dtype = int)
+				counter = 0
+				for i in range(0, indexLength + 1):
+					if counter < indexLength + 1:
+						slicedDate = numpy.append(emptyArray, date[endDateIndex[0] + i])
+					emptyArray = slicedDate
+					counter += 1
+				print slicedDate, slicedDate.shape, date.shape, type(slicedDate)	
 		
