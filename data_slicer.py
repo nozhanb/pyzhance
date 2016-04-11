@@ -65,7 +65,8 @@ import os
 def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None, 
 				outputPath = None, inputPathName = None, 
 				output_format = None, outputFileName = None, 
-				write = False, day = None, month = None, year = None):
+				write = False, day = None, month = None, year = None,
+				numeric = True, latin = False, latinDay = None):
 		
 		#	write = if "TRUE" the code will write out the result to a 
 		#	file. The default is "FALSE".
@@ -113,73 +114,51 @@ def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None,
 	adjclose = dataArray['adjclose']
 	
 	for mainCounter in range(len(year)):
+		yCounter = 0
 		for yPair in year[mainCounter]:
-			for mPair in month[mainCounter]:
-				dCounter = 0
-				for dPair in day[mainCounter]:
-					if dCounter % 2 == 0:
-						ordinalStartDate = datetime.date.toordinal(datetime.datetime.strptime(datetime.date(yPair, mPair, dPair).strftime(dateFormat), dateFormat))
-						print (datetime.date(yPair, mPair, dPair).strftime(dateFormat))
-					if dCounter % 2 == 1:
-						ordinalEndDate = datetime.date.toordinal(datetime.datetime.strptime(datetime.date(yPair, mPair, dPair).strftime(dateFormat), dateFormat))
-						print (datetime.date(yPair, mPair, dPair).strftime(dateFormat))
-					dCounter += 1
-				print (ordinalStartDate, ordinalEndDate)
-				startDateIndex = numpy.where(date == ordinalStartDate)
-				endDateIndex = numpy.where(date == ordinalEndDate)
-				indexLength = abs(endDateIndex[0] - startDateIndex[0])
-				print (startDateIndex, endDateIndex, indexLength)
-				emptyArray = numpy.empty(shape = 0, dtype = int)
-				counter = 0
-				for i in range(0, indexLength + 1):
-					if counter < indexLength + 1:
-						slicedDate = numpy.append(emptyArray, date[endDateIndex[0] + i])
-					emptyArray = slicedDate
-					counter += 1
-				print slicedDate, slicedDate.shape, date.shape, type(slicedDate)
-
-	#~ for mainCounter in range(len(year)):
-		#~ yea = 0
-		#~ for yPair in year[mainCounter]:
-			#~ yCounter = 0
-			#~ print yPair
-			#~ while yCounter < len(year[yea]):
-				#~ mon = 0
-				#~ print mainCounter,yCounter,yPair
-				#~ for mPair in month[mainCounter]:
-					#~ mCounter = 0
-					#~ while mCounter < len(month[mon]):
-						#~ dCounter = 0
-						#~ for dPair in day[mainCounter]:
-							#~ if dCounter == 0:
-								#~ ordinalStartDate = datetime.date.toordinal(datetime.datetime.strptime(datetime.date(yPair[yCounter], mPair[mCounter], dPair).strftime(dateFormat), dateFormat))
-							#~ if dCounter == 1:
-								#~ ordinalEndDate = datetime.date.toordinal(datetime.datetime.strptime(datetime.date(yPair[yCounter], mPair[mCounter], dPair).strftime(dateFormat), dateFormat))
-							#~ dCounter += 1
-							#~ print (ordinalStartDate, ordinalEndDate)
-							#~ startDateIndex = numpy.where(date == ordinalStartDate)
-							#~ endDateIndex = numpy.where(date == ordinalEndDate)
-							#~ indexLength = abs(endDateIndex[0] - startDateIndex[0])
-							#~ print (startDateIndex, endDateIndex, indexLength)
-							#~ emptyArray = numpy.empty(shape = 0, dtype = int)
-							#~ counter = 0
-							#~ print (datetime.date(yPair[yCounter], mPair[mCounter], dPair[0]).strftime(dateFormat))
-							#~ print (datetime.date(yPair[yCounter], mPair[mCounter], dPair[1]).strftime(dateFormat))
-							#~ for i in range(0, indexLength + 1):
-								#~ if counter < indexLength + 1:
-									#~ slicedDate = numpy.append(emptyArray, date[endDateIndex[0] + i])
-								#~ emptyArray = slicedDate
-								#~ counter += 1
-							#~ print slicedDate, slicedDate.shape, date.shape, type(slicedDate)		
-						#~ mCounter += 1
-					#~ mon += 1
-				#~ yCounter += 1
-			#~ yea += 1
-
-
-
-
-
-
-
-
+			if yCounter % 2 == 0:
+				yStart = yPair
+			if yCounter % 2 == 1:
+				yEnd = yPair
+			yCounter += 1
+		mCounter = 0
+		for mPair in month[mainCounter]:
+			if mCounter % 2 == 0:
+				mStart = mPair
+			if mCounter % 2 == 1:
+				mEnd = mPair
+			mCounter += 1
+		dCounter = 0
+		for dPair in day[mainCounter]:
+			if dCounter % 2 == 0:
+				dStart = dPair
+			if dCounter % 2 == 1:
+				dEnd = dPair
+			dCounter += 1 
+				
+		ordinalStartDate = datetime.date.toordinal(datetime.datetime.strptime(datetime.date(yStart, mStart, dStart).strftime(dateFormat), dateFormat))
+		print (datetime.date(yStart, mStart, dStart).strftime(dateFormat))
+		ordinalEndDate = datetime.date.toordinal(datetime.datetime.strptime(datetime.date(yEnd, mEnd, dEnd).strftime(dateFormat), dateFormat))
+		print datetime.date(yEnd, mEnd, dEnd).strftime(dateFormat)	
+		print (ordinalStartDate, ordinalEndDate)
+		startDateIndex = numpy.where(date == ordinalStartDate)
+		endDateIndex = numpy.where(date == ordinalEndDate)
+		indexLength = abs(endDateIndex[0] - startDateIndex[0])
+		print (startDateIndex, endDateIndex, indexLength)
+		emptyArray = numpy.empty(shape = 0, dtype = int)
+		counter = 0
+		for i in range(0, indexLength + 1):
+			if counter < indexLength + 1:
+				slicedDate = numpy.append(emptyArray, date[endDateIndex[0] + i])
+			emptyArray = slicedDate
+			counter += 1
+		print slicedDate, slicedDate.shape, date.shape, type(slicedDate)
+		if latin == True:
+			latinCounter = 0
+			for ll in range(len(latinDay)):
+				for length in range(len(slicedDate)):
+					one = datetime.date.fromordinal(slicedDate[length]).strftime('%a')
+					if one == latinDay[latinCounter]:
+						print latinDay[latinCounter], ' ---> ', datetime.date.fromordinal(slicedDate[length]).strftime('%Y-%m-%d')
+				latinCounter += 1
+	
