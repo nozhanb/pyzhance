@@ -63,10 +63,9 @@
 import os
 
 def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None, 
-				outputPath = None, inputPathName = None, 
-				output_format = None, outputFileName = None, 
+				outputPath = None, inputPathName = None,
 				write = False, day = None, month = None, year = None,
-				numeric = True, latin = False, latinDay = None):
+				letterSearch = False, letterDay = None):
 		
 		#	write = if "TRUE" the code will write out the result to a 
 		#	file. The default is "FALSE".
@@ -93,72 +92,118 @@ def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None,
 	#	values to unpack". The best way is to use the "strpdate2num" function 
 	#	and the "converters" argument as follows.
 	
-	dataArray = numpy.genfromtxt(fname = fileName, delimiter = ",", 
-	dtype = [('date','i4'),('open','f3'),('high','f3'),('low','f3'),
-	('close','f3'),('volume','i4'),('adjclose','f3')],converters = {0:date_converter})
-	
-	date = []
-	open = []
-	high = []
-	low = []
-	close = []
-	volume = []
-	adjclose = []
-	
-	date = dataArray['date']
-	open = dataArray['open']
-	high = dataArray['high']
-	low = dataArray['low']
-	close = dataArray['close']
-	volume = dataArray['volume']
-	adjclose = dataArray['adjclose']
-	
-	for mainCounter in range(len(year)):
-		yCounter = 0
-		for yPair in year[mainCounter]:
-			if yCounter % 2 == 0:
-				yStart = yPair
-			if yCounter % 2 == 1:
-				yEnd = yPair
-			yCounter += 1
-		mCounter = 0
-		for mPair in month[mainCounter]:
-			if mCounter % 2 == 0:
-				mStart = mPair
-			if mCounter % 2 == 1:
-				mEnd = mPair
-			mCounter += 1
-		dCounter = 0
-		for dPair in day[mainCounter]:
-			if dCounter % 2 == 0:
-				dStart = dPair
-			if dCounter % 2 == 1:
-				dEnd = dPair
-			dCounter += 1 
+	for inputs in inputFileName:
+		outfile = open(
+		dataArray = numpy.genfromtxt(fname = inputs, delimiter = ",", 
+		dtype = [('date','i4'),('open','f3'),('high','f3'),('low','f3'),
+		('close','f3'),('volume','i4'),('adjclose','f3')],converters = {0:date_converter})
+		
+		date = []
+		open = []
+		high = []
+		low = []
+		close = []
+		volume = []
+		adjclose = []
+		
+		date = dataArray['date']
+		open = dataArray['open']
+		high = dataArray['high']
+		low = dataArray['low']
+		close = dataArray['close']
+		volume = dataArray['volume']
+		adjclose = dataArray['adjclose']
+		
+		for mainCounter in range(len(year)):
+			yCounter = 0
+			for yPair in year[mainCounter]:
+				if yCounter % 2 == 0:
+					yStart = yPair
+				if yCounter % 2 == 1:
+					yEnd = yPair
+				yCounter += 1
+			mCounter = 0
+			for mPair in month[mainCounter]:
+				if mCounter % 2 == 0:
+					mStart = mPair
+				if mCounter % 2 == 1:
+					mEnd = mPair
+				mCounter += 1
+			dCounter = 0
+			for dPair in day[mainCounter]:
+				if dCounter % 2 == 0:
+					dStart = dPair
+				if dCounter % 2 == 1:
+					dEnd = dPair
+				dCounter += 1 
+					
+			ordinalStartDate = datetime.date.toordinal(datetime.datetime.strptime(datetime.date(yStart, mStart, dStart).strftime(dateFormat), dateFormat))
+			ordinalEndDate = datetime.date.toordinal(datetime.datetime.strptime(datetime.date(yEnd, mEnd, dEnd).strftime(dateFormat), dateFormat))
+			startDateIndex = numpy.where(date == ordinalStartDate)
+			endDateIndex = numpy.where(date == ordinalEndDate)
+			indexLength = abs(endDateIndex[0] - startDateIndex[0])
+			
+			slicedDate = numpy.empty(shape = 0, dtype = int)
+			slicedOpen = numpy.empty(shape = 0, dtype = float)
+			slicedHigh = numpy.empty(shape = 0, dtype = float)
+			slicedLow = numpy.empty(shape = 0, dtype = float)
+			slicedClose = numpy.empty(shape = 0, dtype = float)
+			slicedVolume = numpy.empty(shape = 0, dtype = int)
+			slicedAdjclose = numpy.empty(shape = 0, dtype = float)
+			
+			counter = 0
+			for i in range(0, indexLength + 1):
+				if counter < indexLength + 1:
+					emptyDate = numpy.append(slicedDate, date[endDateIndex[0] + i])
+					emptyOpen = numpy.append(slicedOpen, open[endDateIndex[0] + i])
+					emptyHigh = numpy.append(slicedHigh, high[endDateIndex[0] + i])
+					emptyLow = numpy.append(slicedLow, low[endDateIndex[0] + i])
+					emptyClose = numpy.append(slicedClose, close[endDateIndex[0] + i])
+					emptyVolume = numpy.append(slicedVolume, volume[endDateIndex[0] + i])
+					emptyAdjclose = numpy.append(slicedAdjclose, adjclose[endDateIndex[0] + i])
+				slicedDate = emptyDate
+				slicedOpen = emptyOpen
+				slicedHigh = emptyHigh
+				slicedLow = emptyLow
+				slicedClose = emptyClose
+				slicedVolume = emptyVolume
+				slicedAdjclose = emptyAdjclose
+				counter += 1
 				
-		ordinalStartDate = datetime.date.toordinal(datetime.datetime.strptime(datetime.date(yStart, mStart, dStart).strftime(dateFormat), dateFormat))
-		print (datetime.date(yStart, mStart, dStart).strftime(dateFormat))
-		ordinalEndDate = datetime.date.toordinal(datetime.datetime.strptime(datetime.date(yEnd, mEnd, dEnd).strftime(dateFormat), dateFormat))
-		print datetime.date(yEnd, mEnd, dEnd).strftime(dateFormat)	
-		print (ordinalStartDate, ordinalEndDate)
-		startDateIndex = numpy.where(date == ordinalStartDate)
-		endDateIndex = numpy.where(date == ordinalEndDate)
-		indexLength = abs(endDateIndex[0] - startDateIndex[0])
-		print (startDateIndex, endDateIndex, indexLength)
-		emptyArray = numpy.empty(shape = 0, dtype = int)
-		counter = 0
-		for i in range(0, indexLength + 1):
-			if counter < indexLength + 1:
-				slicedDate = numpy.append(emptyArray, date[endDateIndex[0] + i])
-			emptyArray = slicedDate
-			counter += 1
-		print slicedDate, slicedDate.shape, date.shape, type(slicedDate)
-		if latin == True:
-			latinCounter = 0
-			for ll in range(len(latinDay)):
-				for length in range(len(slicedDate)):
-					one = datetime.date.fromordinal(slicedDate[length]).strftime('%a')
-					if one == latinDay[latinCounter]:
-						print latinDay[latinCounter], ' ---> ', datetime.date.fromordinal(slicedDate[length]).strftime('%Y-%m-%d')
-				latinCounter += 1
+			if letterSearch == True:
+				letterDate = numpy.empty(shape = 0, dtype = int)
+				letterOpen = numpy.empty(shape = 0, dtype = float)
+				letterHigh = numpy.empty(shape = 0, dtype = float)
+				letterLow = numpy.empty(shape = 0, dtype = float)
+				letterClose = numpy.empty(shape = 0, dtype = float)
+				letterVolume = numpy.empty(shape = 0, dtype = int)
+				letterAdjclose = numpy.empty(shape = 0, dtype = float)
+				
+				#	Do not confuse "letterDate" with "letterDay".
+				letterCounter = 0
+				for ll in range(len(letterDay)):
+					for length in range(len(slicedDate)):
+						notOrdinalDate = datetime.date.fromordinal(slicedDate[length]).strftime('%a')
+						if notOrdinalDate == letterDay[letterCounter]:
+							clearDate = numpy.append(letterDate, slicedDate[length])
+							clearOpen = numpy.append(letterOpen, slicedOpen[length])
+							clearHigh = numpy.append(letterHigh, slicedHigh[length])
+							clearLow = numpy.append(letterLow, slicedLow[length])
+							clearClose = numpy.append(letterClose, slicedClose[length])
+							clearVolume = numpy.append(letterVolume, slicedVolume[length])
+							clearAdjclose = numpy.append(letterAdjclose, slicedAdjclose[length])
+							
+							letterDate = clearDate
+							letterOpen = clearOpen
+							letterHigh = clearHigh
+							letterLow = clearLow
+							letterClose = clearClose
+							letterVolume = clearVolume
+							letterAdjclose = clearAdjclose
+					letterCounter += 1
+				
+		if letterSearch == True:
+			return 
+		if letterSearch == False:
+			return slicedDate, slicedOpen, slicedHigh, slicedLow, slicedClose, slicedVolume, slicedAdjclose
 	
