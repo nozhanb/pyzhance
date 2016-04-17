@@ -63,9 +63,10 @@
 import os
 
 def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None, 
-				outputPath = None, inputPathName = None,
+				outputPath = None, inputPath = None,
 				write = False, day = None, month = None, year = None,
-				letterSearch = False, letterDay = None):
+				letterSearch = False, letterDay = None, 
+				outputFileName = None, ):
 		
 		#	write = if "TRUE" the code will write out the result to a 
 		#	file. The default is "FALSE".
@@ -76,10 +77,19 @@ def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None,
 	import numpy
 	import datetime
 		
-	if inputPathName is not None:
-		fileName = os.path.join(os.path.expanduser(inputPathName),inputFileName)
-	if inputPathName is None:
-		fileName = os.path.join(os.getcwd(),inputFileName)
+	if inputPath is not None:
+		inputFileName = os.path.join(os.path.expanduser(inputPath),inputFileName)
+	elif inputPath is None:
+		inputFileName = os.path.join(os.getcwd(),inputFileName)
+	if outputPath in None:
+		outputPath = os.getcwd()
+	elif outputPath is not None:
+		outputPath = os.path.expanduser(outputPath)
+	if outputFileName in None:
+		oututFileName = os.path.join(os.getcwd(), outputFileName)
+	elif outputFileName is not None:
+		outputFileName = os.path.join(os.path.expanduser(inputPath), outputFileName)
+		
 		
 	def date_converter(tag): # tag: German word for day.
 		convertedDate = datetime.datetime.strptime(tag,dateFormat)
@@ -88,12 +98,17 @@ def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None,
 	
 #	tag = date_converter(x,dateFormat)
 
-	#	NOTE: Do NOT use the dtype arguemtn or you will get the "Too many
+	#	NOTE: Do NOT use the dtype arguemnt or you will get the "Too many
 	#	values to unpack". The best way is to use the "strpdate2num" function 
 	#	and the "converters" argument as follows.
-	
-	for inputs in inputFileName:
-		outfile = open(
+	if readIn == True
+		inputFile = open(inputFileName, 'r')
+		symbol = []
+		for line in inputFile:
+			symbol.append(line.split())
+		inputFile.close()
+		
+	for inputs in symbol:
 		dataArray = numpy.genfromtxt(fname = inputs, delimiter = ",", 
 		dtype = [('date','i4'),('open','f3'),('high','f3'),('low','f3'),
 		('close','f3'),('volume','i4'),('adjclose','f3')],converters = {0:date_converter})
@@ -115,6 +130,7 @@ def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None,
 		adjclose = dataArray['adjclose']
 		
 		for mainCounter in range(len(year)):
+			outputFile = open(inputs, 'w')
 			yCounter = 0
 			for yPair in year[mainCounter]:
 				if yCounter % 2 == 0:
@@ -201,6 +217,10 @@ def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None,
 							letterVolume = clearVolume
 							letterAdjclose = clearAdjclose
 					letterCounter += 1
+					
+			outputFile.write(letterDate, letterOpen, letterHigh, letterLow, letterClose, letterVolume, letterAdjclose)
+			ordinal = "%d%s" % (n,"tsnrhtdd"[(n/10%10!=1)*(n%10<4)*n%10::4])
+			outputFile.write(slicedDate, slicedOpen, slicedHigh, slicedLow, slicedClose, slicedVolume, slicedAdjclose)
 				
 		if letterSearch == True:
 			return 

@@ -1,11 +1,11 @@
 #~ #This is yet to begin.
 import os
 
-def data_downloader(readIn = "FALSE", readOut = "FALSE", intraday = "FALSE", symbol = None, 
+def data_downloader(readIn = False, readOut = False, intraday = False, symbol = None, 
 					startDate = None, endDate = None, outputPath = None,
 					inputPathName = None, outputPathName = None, 
 					outputSymbol = None, inputFileName = None, 
-					outputFileName = None, message = "FALSE"):
+					outputFileName = None, message = False):
 						
 	# read_in: if set to "TRUE" the code will use the given text file 
 	# to read in symbols from that file. Note that the user MUST provide
@@ -77,7 +77,7 @@ def data_downloader(readIn = "FALSE", readOut = "FALSE", intraday = "FALSE", sym
 	if inputPathName is None:
 		inputPathName = os.getcwd()
 		
-	if readIn == "TRUE":
+	if readIn == True:
 		if inputPathName is None:
 			file = os.path.join(os.getcwd(),inputFileName)
 		elif inputPathName is not None:
@@ -89,7 +89,7 @@ def data_downloader(readIn = "FALSE", readOut = "FALSE", intraday = "FALSE", sym
 		symbolToRead.close()			# unwanted empty space of each
 										# line when it is reading the file.
 
-	if readOut == "TRUE":
+	if readOut == True:
 		if outputPathName is None:
 			file = os.path.join(os.getcwd(), outputFileName)
 		elif outputPathName is not None:
@@ -100,12 +100,12 @@ def data_downloader(readIn = "FALSE", readOut = "FALSE", intraday = "FALSE", sym
 			outputSymbol.append(outline.strip())
 		outName.close()
 		
-	if readIn == "TRUE" and readOut == "FALSE":
+	if readIn == True and readOut == False:
 		outputSymbol = symbol
-	if readIn == "FALSE" and readOut == "FALSE":
+	if readIn == False and readOut == False:
 		outputSymbol = symbol
 	
-	if intraday == "FALSE":
+	if intraday == False:
 		outPath = os.path.join(outputPath)
 		sDate = startDate.split("-")
 		a = str(int(sDate[1]) - 1)	# month (I added a -1 so it matched the yahoo format)
@@ -130,13 +130,13 @@ def data_downloader(readIn = "FALSE", readOut = "FALSE", intraday = "FALSE", sym
 			for element in sourceCodeTwo:
 				downloadFile.write(element)
 			downloadFile.close()
-			if message == "TRUE":
+			if message == True:
 				print
 				print(sym + ".csv ---> downloaded")
 				print
 			time.sleep(2)
 			counter += 1
-	if intraday == "TRUE":
+	if intraday == True:
 		counter = 0
 		for sym in symbol:
 			file = os.path.join(outputPath, outputSymbol[counter] + ".csv")
@@ -150,7 +150,7 @@ def data_downloader(readIn = "FALSE", readOut = "FALSE", intraday = "FALSE", sym
 						downloadFile.write(eachLine+'\n')
 			downloadFile.close()
 			
-			if message == "TRUE":
+			if message == True:
 				print(sym + ".csv", " ---> downloaded ")
 				#print('sleeping')
 				
