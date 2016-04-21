@@ -1,4 +1,4 @@
-#~ #This is yet to begin.
+
 import os
 
 def data_downloader(readIn = False, readOut = False, intraday = False, symbol = None, 

@@ -66,7 +66,7 @@ def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None,
 				outputPath = None, inputPath = None,
 				write = False, day = None, month = None, year = None,
 				letterSearch = False, letterDay = None, 
-				outputFileName = None, ):
+				outputFileName = None):
 		
 		#	write = if "TRUE" the code will write out the result to a 
 		#	file. The default is "FALSE".
@@ -74,47 +74,47 @@ def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None,
 		#	Date,Open,High,Low,Close,Volume,Adj Close
 		
 	import os
+	import sys
 	import numpy
 	import datetime
-		
-	if inputPath is not None:
-		inputFileName = os.path.join(os.path.expanduser(inputPath),inputFileName)
-	elif inputPath is None:
-		inputFileName = os.path.join(os.getcwd(),inputFileName)
-	if outputPath in None:
-		outputPath = os.getcwd()
-	elif outputPath is not None:
-		outputPath = os.path.expanduser(outputPath)
-	if outputFileName in None:
-		oututFileName = os.path.join(os.getcwd(), outputFileName)
-	elif outputFileName is not None:
-		outputFileName = os.path.join(os.path.expanduser(inputPath), outputFileName)
-		
-		
-	def date_converter(tag): # tag: German word for day.
-		convertedDate = datetime.datetime.strptime(tag,dateFormat)
-		ordinalDate = datetime.date.toordinal(convertedDate)
-		return ordinalDate		
-	
-#	tag = date_converter(x,dateFormat)
 
-	#	NOTE: Do NOT use the dtype arguemnt or you will get the "Too many
-	#	values to unpack". The best way is to use the "strpdate2num" function 
-	#	and the "converters" argument as follows.
-	if readIn == True
-		inputFile = open(inputFileName, 'r')
-		symbol = []
-		for line in inputFile:
-			symbol.append(line.split())
-		inputFile.close()
-		
+	inputFile = open(inputFileName, 'r')
+	symbol = []
+	for line in inputFile:
+		symbol.append(line.strip())
+	inputFile.close()
 	for inputs in symbol:
-		dataArray = numpy.genfromtxt(fname = inputs, delimiter = ",", 
+		if inputPath is not None:
+			inputPath = os.path.join(os.path.expanduser(inputPath),inputs)
+		elif inputPath is None:
+			inputPath = os.path.join(os.getcwd(),inputs)
+		if outputPath is None:
+			outputPath = os.getcwd()
+		elif outputPath is not None:
+			outputPath = os.path.expanduser(outputPath)
+		if outputFileName is None:
+			outputFileName = os.path.join(os.getcwd(), inputs)
+		elif outputFileName is not None:
+			outputFileName = os.path.join(os.path.expanduser(inputPath), outputFileName)
+			
+			
+		def date_converter(tag): # tag: German word for day.
+			convertedDate = datetime.datetime.strptime(tag,dateFormat)
+			ordinalDate = datetime.date.toordinal(convertedDate)
+			return ordinalDate		
+		
+		#	tag = date_converter(x,dateFormat)
+		
+		#	NOTE: Do NOT use the dtype arguemnt or you will get the "Too many
+		#	values to unpack". The best way is to use the "strpdate2num" function 
+		#	and the "converters" argument as follows.
+		
+		dataArray = numpy.genfromtxt(fname = inputPath, delimiter = ",", 
 		dtype = [('date','i4'),('open','f3'),('high','f3'),('low','f3'),
 		('close','f3'),('volume','i4'),('adjclose','f3')],converters = {0:date_converter})
 		
 		date = []
-		open = []
+		openn = []	#	openn with "nn" because python will confuse it with function open otherwise.
 		high = []
 		low = []
 		close = []
@@ -122,7 +122,7 @@ def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None,
 		adjclose = []
 		
 		date = dataArray['date']
-		open = dataArray['open']
+		openn = dataArray['open']
 		high = dataArray['high']
 		low = dataArray['low']
 		close = dataArray['close']
@@ -130,7 +130,8 @@ def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None,
 		adjclose = dataArray['adjclose']
 		
 		for mainCounter in range(len(year)):
-			outputFile = open(inputs, 'w')
+			n = mainCounter
+			ordinalDate = "%d%s" % (n,"tsnrhtdd"[(n/10%10!=1)*(n%10<4)*n%10::4])		
 			yCounter = 0
 			for yPair in year[mainCounter]:
 				if yCounter % 2 == 0:
@@ -151,8 +152,8 @@ def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None,
 					dStart = dPair
 				if dCounter % 2 == 1:
 					dEnd = dPair
-				dCounter += 1 
-					
+				dCounter += 1
+			
 			ordinalStartDate = datetime.date.toordinal(datetime.datetime.strptime(datetime.date(yStart, mStart, dStart).strftime(dateFormat), dateFormat))
 			ordinalEndDate = datetime.date.toordinal(datetime.datetime.strptime(datetime.date(yEnd, mEnd, dEnd).strftime(dateFormat), dateFormat))
 			startDateIndex = numpy.where(date == ordinalStartDate)
@@ -171,7 +172,7 @@ def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None,
 			for i in range(0, indexLength + 1):
 				if counter < indexLength + 1:
 					emptyDate = numpy.append(slicedDate, date[endDateIndex[0] + i])
-					emptyOpen = numpy.append(slicedOpen, open[endDateIndex[0] + i])
+					emptyOpen = numpy.append(slicedOpen, openn[endDateIndex[0] + i])
 					emptyHigh = numpy.append(slicedHigh, high[endDateIndex[0] + i])
 					emptyLow = numpy.append(slicedLow, low[endDateIndex[0] + i])
 					emptyClose = numpy.append(slicedClose, close[endDateIndex[0] + i])
@@ -198,6 +199,15 @@ def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None,
 				#	Do not confuse "letterDate" with "letterDay".
 				letterCounter = 0
 				for ll in range(len(letterDay)):
+					n = ll
+					letterDate = numpy.empty(shape = 0, dtype = int)
+					letterOpen = numpy.empty(shape = 0, dtype = float)
+					letterHigh = numpy.empty(shape = 0, dtype = float)
+					letterLow = numpy.empty(shape = 0, dtype = float)
+					letterClose = numpy.empty(shape = 0, dtype = float)
+					letterVolume = numpy.empty(shape = 0, dtype = int)
+					letterAdjclose = numpy.empty(shape = 0, dtype = float)
+					#~ ordinalDay = "%d%s" % (n,"tsnrhtdd"[(n/10%10!=1)*(n%10<4)*n%10::4])
 					for length in range(len(slicedDate)):
 						notOrdinalDate = datetime.date.fromordinal(slicedDate[length]).strftime('%a')
 						if notOrdinalDate == letterDay[letterCounter]:
@@ -218,12 +228,14 @@ def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None,
 							letterAdjclose = clearAdjclose
 					letterCounter += 1
 					
-			outputFile.write(letterDate, letterOpen, letterHigh, letterLow, letterClose, letterVolume, letterAdjclose)
-			ordinal = "%d%s" % (n,"tsnrhtdd"[(n/10%10!=1)*(n%10<4)*n%10::4])
-			outputFile.write(slicedDate, slicedOpen, slicedHigh, slicedLow, slicedClose, slicedVolume, slicedAdjclose)
-				
+					numpy.savetxt(inputs+ordinalDate+letterDay[n]+'.csv', numpy.c_[letterDate, letterOpen, letterHigh, letterLow, letterClose, letterVolume, letterAdjclose], fmt = ('%d','%.6f','%.6f','%.6f','%.6f','%d','%.6f'), delimiter = ',')
+			if letterSearch == False:
+				n = mainCounter
+				numpy.savetxt(inputs+ordinalDate+'.csv', numpy.c_[slicedDate, slicedOpen, slicedHigh, slicedLow, slicedClose, slicedVolume, slicedAdjclose], fmt = ('%d','%.6f','%.6f','%.6f','%.6f','%d','%.6f'), delimiter = ',')
 		if letterSearch == True:
 			return 
 		if letterSearch == False:
-			return slicedDate, slicedOpen, slicedHigh, slicedLow, slicedClose, slicedVolume, slicedAdjclose
-	
+			return slicedDate, slicedOpen, slicedHigh, slicedLow, slicedClose, slicedVolume, slicedAdjclose	
+
+
+
