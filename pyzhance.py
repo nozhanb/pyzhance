@@ -411,4 +411,138 @@ def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None,
 			#~ return slicedDate, slicedOpen, slicedHigh, slicedLow, slicedClose, slicedVolume, slicedAdjclose	
 
 
+import os
+import sys
+import numpy
+import pyformat
+import matplotlib
+import matplotlib.pyplot as plt
+from matplotlib import rc
+rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+#~ plt.rc('text', usetex=True)
+#~ plt.rc('font', family='serif')
+
+def ratio_weekday(symbol, cTo = True, input_path = None, output_path = None):
+	
+	#	This function will find different ratios for different stocks 
+	#	based on weekdays.	cMoThMl
+	
+	days = ['Mon','Tue','Wed','Thu','Fri']
+		
+	if cTo == True:	#	Then it will find the ratio of Close to Open price.
+		
+		count = 0
+		count1 = 0
+		count2 = 0		
+		count3 = 0
+		fig1, axa = plt.subplots(2,3)
+		#~ fig2, axb = plt.subplots(1,1)
+
+		for i in symbol:
+			if input_path is None:
+				main_input_path = os.path.join(os.getcwd(), i)
+			elif input_path is not None:
+				main_input_path = os.path.join(os.path.expanduser(input_path), i)
+			if output_path is None:
+				main_output_path = os.path.join(os.getcwd(), i)
+			elif output_path is not None:
+				main_output_path = os.path.join(os.path.expanduser(output_path), i)
+			
+			dataArray = numpy.genfromtxt(fname = main_input_path , delimiter = ',',
+			dtype = [('date','i4'),('open','f3'),('high','f3'),('low','f3'),
+					('close','f3'),('volume','i4'),('adjclose','f3')])
+			
+			date = []
+			openn = []	#	openn because python will confuse open with the function "open".
+			high = []
+			low = []
+			close = []
+			volume = []
+			adjclose = []
+			
+			#	We creat a dictionary of different varibles.
+			
+			var = {symbol[count]+'CGO' : [], symbol[count]+'CEO' : [], symbol[count]+'CLO' : [],
+			symbol[count]+'FG' : [], symbol[count]+'FE' : [], symbol[count]+'FL' : [],
+			symbol[count]+'Final': [], symbol[count]+'CGOCTO': [], symbol[count]+'CGOHTL' : [],
+			symbol[count]+'CGOO' : [], symbol[count]+'CGOC' : [], symbol[count]+'CGOH' : [],
+			symbol[count]+'CGOL' : [], symbol[count]+'CGOV' : [], symbol[count]+'CLOO' : [], 
+			symbol[count]+'CLOC' : [], symbol[count]+'CLOH' : [], symbol[count]+'CLOL' : [], 
+			symbol[count]+'CLOV' : [], symbol[count]+'CGOCTOTHTL': [], symbol[count]+'CGOD' : []}
+			
+			date = dataArray['date']
+			openn = dataArray['open']
+			high = dataArray['high']
+			low = dataArray['low']
+			close = dataArray['close']
+			volume = dataArray['volume']
+			adjclose = dataArray['adjclose']
+			
+			#	This part is where we calculate the ratio of close to open price
+			#	based on week days.
+			
+			for j in range(len(date)):
+				val = float(close[j])/float(openn[j])
+				if val > 1.0:
+					var[symbol[count]+'CGO'].append(val)
+					var[symbol[count]+'CGOD'].append(date[j])
+					var[symbol[count]+'CGOO'].append(openn[j])
+					var[symbol[count]+'CGOC'].append(close[j])
+					var[symbol[count]+'CGOH'].append(high[j])
+					var[symbol[count]+'CGOL'].append(low[j])
+					var[symbol[count]+'CLOV'].append(volume[j]*10**(-7))			
+					var[symbol[count]+'CGOCTO'].append(float(close[j])/float(openn[j]))
+					var[symbol[count]+'CGOHTL'].append(float(high[j])/float(low[j]))
+					var[symbol[count]+'CGOCTOTHTL'].append(float(close[j]-openn[j])/float(high[j]-low[j]))
+				elif val == 1.0:
+					var[symbol[count]+'CEO'].append(val)
+				else:
+					var[symbol[count]+'CLO'].append(val)
+					var[symbol[count]+'CLOO'].append(openn[j])
+					var[symbol[count]+'CLOC'].append(close[j])
+					var[symbol[count]+'CLOH'].append(high[j])
+					var[symbol[count]+'CLOL'].append(low[j])
+		
+			var[symbol[count]+'FG'].append(float(len(var[symbol[count]+'CGO']))/float(len(date)))
+			var[symbol[count]+'FE'].append(float(len(var[symbol[count]+'CEO']))/float(len(date)))
+			var[symbol[count]+'FL'].append(float(len(var[symbol[count]+'CLO']))/float(len(date)))
+			var[symbol[count]+'Final'] = var[symbol[count]+'FG'] + var[symbol[count]+'FE'] + var[symbol[count]+'FL']
+			#~ 
+			#~ if count == 4:
+				#~ print 
+				#~ print min(var[symbol[count]+'CGOCTOTHTL']), "< CGOCTOTHTL <" , max(var[symbol[count]+'CGOCTOTHTL'])
+				#~ print "And the average value of CGOCTOTHTL is: ", sum(var[symbol[count]+'CGOCTOTHTL'])/len(var[symbol[count]+'CGOCTOTHTL'])
+				#~ print 
+			#~ #	This is where we find the average of a couple of prameters.
+				#~ axb.set_yscale('log')
+				#~ axb.plot(var[symbol[count]+'CGOD'], var[symbol[count]+'CGOCTOTHTL'], linestyle = '-',color = 'green')
+				#~ axb.plot(var[symbol[count]+'CGOD'], var[symbol[count]+'CLOV'], linestyle = '-',color = 'red')
+				#~ 
+			labels = [r'$c>o$', '$c=o$', '$c<o$']
+			colors = ['yellowgreen', 'gold', 'lightskyblue']
+			explode=(0, 0, 0)
+			axa[count1,count2].pie(var[symbol[count]+'Final'], explode = explode, 
+			labels = labels, colors = colors, autopct = '%1.1f%%', shadow = True, 
+			startangle = 90,)
+			axa[count1,count2].set_aspect('equal')
+			axa[count1,count2].set_title(days[count3], fontsize=10)
+			print 
+			count2 += 1
+			if count2 == 3:
+				count1 += 1
+				count2 = 0
+			count += 1
+			count3 += 1
+			if count % 5 == 0:
+				count1 = 0
+				count2 = 0
+				count3 = 0
+				print 'counter ---> ', count
+				fig1.delaxes(axa[1,2])
+				fig1.suptitle(r"Ratio of close to open prices based on week days")
+				fig1.savefig(main_output_path, format = 'png')
+				fig1, axa = plt.subplots(2,3)
+		plt.show()
+		print 'The output path is ---> ', main_output_path
+	#~ if cTo == False: #	It will find the cMoThMl ratio (close minus open to high minus low).
 
