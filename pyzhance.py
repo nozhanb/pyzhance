@@ -422,15 +422,26 @@ rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 #~ plt.rc('text', usetex=True)
 #~ plt.rc('font', family='serif')
 
-def ratio_weekday(symbol, cTo = True, input_path = None, output_path = None):
+
+#~ symbol = ['DIS0thMon','DIS0thTue','DIS0thWed','DIS0thThu','DIS0thFri'], cTo = True, output_path = '~/nozhan/science/computation/data/finance/output/code/pyzhance/ratio_weekday'
+
+
+def ratio_weekday(symbol_wd, symbol_total ,cTo = True, input_path_wd = None, 
+					input_path_total = None, output_path = None):
 	
 	#	This function will find different ratios for different stocks 
 	#	based on weekdays.	cMoThMl
 	
+	#	symbol_wd: is the list of name of files where each file contains
+	#	the data of a symbol based on single week days of given interval.
+	#	symbol_total: is the list of name of files where each file contains
+	#	the data of a symbol for all days of a given interval.
+	
 	days = ['Mon','Tue','Wed','Thu','Fri']
 		
 	if cTo == True:	#	Then it will find the ratio of Close to Open price.
-		
+		dic_wd = []
+		dic_total = []
 		count = 0
 		count1 = 0
 		count2 = 0		
@@ -438,17 +449,27 @@ def ratio_weekday(symbol, cTo = True, input_path = None, output_path = None):
 		fig1, axa = plt.subplots(2,3)
 		#~ fig2, axb = plt.subplots(1,1)
 
-		for i in symbol:
-			if input_path is None:
-				main_input_path = os.path.join(os.getcwd(), i)
-			elif input_path is not None:
-				main_input_path = os.path.join(os.path.expanduser(input_path), i)
+		for i in symbol_wd:
+			if input_path_wd is None:
+				main_input_path_wd = os.path.join(os.getcwd(), i)
+			elif input_path_wd is not None:
+				main_input_path_wd = os.path.join(os.path.expanduser(input_path_wd), i)				
 			if output_path is None:
 				main_output_path = os.path.join(os.getcwd(), i)
 			elif output_path is not None:
 				main_output_path = os.path.join(os.path.expanduser(output_path), i)
 			
-			dataArray = numpy.genfromtxt(fname = main_input_path , delimiter = ',',
+			#	We creat a dictionary of different varibles.
+			
+			var_wd = {symbol_wd[count]+'CGO' : [], symbol_wd[count]+'CEO' : [], symbol_wd[count]+'CLO' : [],
+			symbol_wd[count]+'FG' :    [], symbol_wd[count]+'FE' :    [], symbol_wd[count]+'FL' : [],
+			symbol_wd[count]+'Final':  [], symbol_wd[count]+'CGOCTO': [], symbol_wd[count]+'CGOHTL' : [],
+			symbol_wd[count]+'CGOO' :  [], symbol_wd[count]+'CGOC' :  [], symbol_wd[count]+'CGOH' : [],
+			symbol_wd[count]+'CGOL' :  [], symbol_wd[count]+'CGOV' :  [], symbol_wd[count]+'CLOO' : [], 
+			symbol_wd[count]+'CLOC' :  [], symbol_wd[count]+'CLOH' :  [], symbol_wd[count]+'CLOL' : [], 
+			symbol_wd[count]+'CLOV' :  [], symbol_wd[count]+'CGOCTOTHTL': [], symbol_wd[count]+'CGOD' : []}
+			
+			dataArrayDay = numpy.genfromtxt(fname = main_input_path_wd , delimiter = ',',
 			dtype = [('date','i4'),('open','f3'),('high','f3'),('low','f3'),
 					('close','f3'),('volume','i4'),('adjclose','f3')])
 			
@@ -460,68 +481,126 @@ def ratio_weekday(symbol, cTo = True, input_path = None, output_path = None):
 			volume = []
 			adjclose = []
 			
-			#	We creat a dictionary of different varibles.
-			
-			var = {symbol[count]+'CGO' : [], symbol[count]+'CEO' : [], symbol[count]+'CLO' : [],
-			symbol[count]+'FG' : [], symbol[count]+'FE' : [], symbol[count]+'FL' : [],
-			symbol[count]+'Final': [], symbol[count]+'CGOCTO': [], symbol[count]+'CGOHTL' : [],
-			symbol[count]+'CGOO' : [], symbol[count]+'CGOC' : [], symbol[count]+'CGOH' : [],
-			symbol[count]+'CGOL' : [], symbol[count]+'CGOV' : [], symbol[count]+'CLOO' : [], 
-			symbol[count]+'CLOC' : [], symbol[count]+'CLOH' : [], symbol[count]+'CLOL' : [], 
-			symbol[count]+'CLOV' : [], symbol[count]+'CGOCTOTHTL': [], symbol[count]+'CGOD' : []}
-			
-			date = dataArray['date']
-			openn = dataArray['open']
-			high = dataArray['high']
-			low = dataArray['low']
-			close = dataArray['close']
-			volume = dataArray['volume']
-			adjclose = dataArray['adjclose']
-			
+			date = dataArrayDay['date']
+			openn = dataArrayDay['open']
+			high = dataArrayDay['high']
+			low = dataArrayDay['low']
+			close = dataArrayDay['close']
+			volume = dataArrayDay['volume']
+			adjclose = dataArrayDay['adjclose']
+					
 			#	This part is where we calculate the ratio of close to open price
 			#	based on week days.
 			
 			for j in range(len(date)):
 				val = float(close[j])/float(openn[j])
 				if val > 1.0:
-					var[symbol[count]+'CGO'].append(val)
-					var[symbol[count]+'CGOD'].append(date[j])
-					var[symbol[count]+'CGOO'].append(openn[j])
-					var[symbol[count]+'CGOC'].append(close[j])
-					var[symbol[count]+'CGOH'].append(high[j])
-					var[symbol[count]+'CGOL'].append(low[j])
-					var[symbol[count]+'CLOV'].append(volume[j]*10**(-7))			
-					var[symbol[count]+'CGOCTO'].append(float(close[j])/float(openn[j]))
-					var[symbol[count]+'CGOHTL'].append(float(high[j])/float(low[j]))
-					var[symbol[count]+'CGOCTOTHTL'].append(float(close[j]-openn[j])/float(high[j]-low[j]))
+					var_wd[symbol_wd[count]+'CGO'].append(val)
+					var_wd[symbol_wd[count]+'CGOD'].append(date[j])
+					var_wd[symbol_wd[count]+'CGOO'].append(openn[j])
+					var_wd[symbol_wd[count]+'CGOC'].append(close[j])
+					var_wd[symbol_wd[count]+'CGOH'].append(high[j])
+					var_wd[symbol_wd[count]+'CGOL'].append(low[j])
+					var_wd[symbol_wd[count]+'CLOV'].append(volume[j]*10**(-7))			
+					var_wd[symbol_wd[count]+'CGOCTO'].append(float(close[j])/float(openn[j]))
+					var_wd[symbol_wd[count]+'CGOHTL'].append(float(high[j])/float(low[j]))
+					var_wd[symbol_wd[count]+'CGOCTOTHTL'].append(float(close[j]-openn[j])/float(high[j]-low[j]))
 				elif val == 1.0:
-					var[symbol[count]+'CEO'].append(val)
+					var_wd[symbol_wd[count]+'CEO'].append(val)
 				else:
-					var[symbol[count]+'CLO'].append(val)
-					var[symbol[count]+'CLOO'].append(openn[j])
-					var[symbol[count]+'CLOC'].append(close[j])
-					var[symbol[count]+'CLOH'].append(high[j])
-					var[symbol[count]+'CLOL'].append(low[j])
+					var_wd[symbol_wd[count]+'CLO'].append(val)
+					var_wd[symbol_wd[count]+'CLOO'].append(openn[j])
+					var_wd[symbol_wd[count]+'CLOC'].append(close[j])
+					var_wd[symbol_wd[count]+'CLOH'].append(high[j])
+					var_wd[symbol_wd[count]+'CLOL'].append(low[j])
 		
-			var[symbol[count]+'FG'].append(float(len(var[symbol[count]+'CGO']))/float(len(date)))
-			var[symbol[count]+'FE'].append(float(len(var[symbol[count]+'CEO']))/float(len(date)))
-			var[symbol[count]+'FL'].append(float(len(var[symbol[count]+'CLO']))/float(len(date)))
-			var[symbol[count]+'Final'] = var[symbol[count]+'FG'] + var[symbol[count]+'FE'] + var[symbol[count]+'FL']
-			#~ 
+			var_wd[symbol_wd[count]+'FG'].append(float(len(var_wd[symbol_wd[count]+'CGO']))/float(len(date)))
+			var_wd[symbol_wd[count]+'FE'].append(float(len(var_wd[symbol_wd[count]+'CEO']))/float(len(date)))
+			var_wd[symbol_wd[count]+'FL'].append(float(len(var_wd[symbol_wd[count]+'CLO']))/float(len(date)))
+			var_wd[symbol_wd[count]+'Final'] = var_wd[symbol_wd[count]+'FG'] + var_wd[symbol_wd[count]+'FE'] + var_wd[symbol_wd[count]+'FL']
+
+			if count % 5 == 0:
+				counter = 0
+				for i in symbol_total:
+					if input_path_total is None:
+						main_input_path_total = os.path.join(os.getcwd(), i)
+					elif input_path_total is not None:
+						main_input_path_total = os.path.join(os.path.expanduser(input_path_total), i)
+
+					var_total = {symbol_total[counter]+'tCGO' :  [], symbol_total[counter]+'tCEO' :  [], symbol_total[counter]+'tCLO' : [],
+					symbol_total[counter]+'tFG' :   [], symbol_total[counter]+'tFE' :   [], symbol_total[counter]+'tFL' : [],
+					symbol_total[counter]+'tFcounternal': [], symbol_total[counter]+'tCGOCTO': [], symbol_total[counter]+'tCGOHTL' : [],
+					symbol_total[counter]+'tCGOO' : [], symbol_total[counter]+'tCGOC' : [], symbol_total[counter]+'tCGOH' : [],
+					symbol_total[counter]+'tCGOL' : [], symbol_total[counter]+'tCGOV' : [], symbol_total[counter]+'tCLOO' : [], 
+					symbol_total[counter]+'tCLOC' : [], symbol_total[counter]+'tCLOH' : [], symbol_total[counter]+'tCLOL' : [], 
+					symbol_total[counter]+'tCLOV' : [], symbol_total[counter]+'tCGOCTOTHTL': [], symbol_total[counter]+'tCGOD' : []}
+						
+					dataArrayTotal = numpy.genfromtxt(fname = main_input_path_total , delimiter = ',',
+					dtype = [('date','i4'),('open','f3'),('high','f3'),('low','f3'),
+							('close','f3'),('volume','i4'),('adjclose','f3')])
+		
+					date = []
+					openn = []	#	openn because python will confuse open with the function "open".
+					high = []
+					low = []
+					close = []
+					volume = []
+					adjclose = []
+					
+					date = dataArrayTotal['date']
+					openn = dataArrayTotal['open']
+					high = dataArrayTotal['high']
+					low = dataArrayTotal['low']
+					close = dataArrayTotal['close']
+					volume = dataArrayTotal['volume']
+					adjclose = dataArrayTotal['adjclose']
+			
+					for j in range(len(date)):
+						val = float(close[j])/float(openn[j])
+						if val > 1.0:
+							var_total[symbol_total[counter]+'tCGO'].append(val)
+							var_total[symbol_total[counter]+'tCGOD'].append(date[j])
+							var_total[symbol_total[counter]+'tCGOO'].append(openn[j])
+							var_total[symbol_total[counter]+'tCGOC'].append(close[j])
+							var_total[symbol_total[counter]+'tCGOH'].append(high[j])
+							var_total[symbol_total[counter]+'tCGOL'].append(low[j])
+							var_total[symbol_total[counter]+'tCLOV'].append(volume[j]*10**(-7))			
+							var_total[symbol_total[counter]+'tCGOCTO'].append(float(close[j])/float(openn[j]))
+							var_total[symbol_total[counter]+'tCGOHTL'].append(float(high[j])/float(low[j]))
+							var_total[symbol_total[counter]+'tCGOCTOTHTL'].append(float(close[j]-openn[j])/float(high[j]-low[j]))
+						elif val == 1.0:
+							var_total[symbol_total[counter]+'tCEO'].append(val)
+						else:
+							var_total[symbol_total[counter]+'tCLO'].append(val)
+							var_total[symbol_total[counter]+'tCLOO'].append(openn[j])
+							var_total[symbol_total[counter]+'tCLOC'].append(close[j])
+							var_total[symbol_total[counter]+'tCLOH'].append(high[j])
+							var_total[symbol_total[counter]+'tCLOL'].append(low[j])
+					
+					var_total[symbol_total[counter]+'tFG'].append(float(len(var_total[symbol_total[counter]+'tCGO']))/float(len(date)))
+					var_total[symbol_total[counter]+'tFE'].append(float(len(var_total[symbol_total[counter]+'tCEO']))/float(len(date)))
+					var_total[symbol_total[counter]+'tFL'].append(float(len(var_total[symbol_total[counter]+'tCLO']))/float(len(date)))
+					var_total[symbol_total[counter]+'tFinal'] = var_total[symbol_total[counter]+'tFG'] + var_total[symbol_total[counter]+'tFE'] + var_total[symbol_total[counter]+'tFL']
+					
+					counter += 1
+			
+			dic_wd.append(var_wd) 
+			dic_total.append(var_total)
+			
 			#~ if count == 4:
 				#~ print 
-				#~ print min(var[symbol[count]+'CGOCTOTHTL']), "< CGOCTOTHTL <" , max(var[symbol[count]+'CGOCTOTHTL'])
-				#~ print "And the average value of CGOCTOTHTL is: ", sum(var[symbol[count]+'CGOCTOTHTL'])/len(var[symbol[count]+'CGOCTOTHTL'])
+				#~ print min(var[symbol_total[count]+'CGOCTOTHTL']), "< CGOCTOTHTL <" , max(var[symbol_total[count]+'CGOCTOTHTL'])
+				#~ print "And the average value of CGOCTOTHTL is: ", sum(var[symbol_total[count]+'CGOCTOTHTL'])/len(var[symbol_total[count]+'CGOCTOTHTL'])
 				#~ print 
 			#~ #	This is where we find the average of a couple of prameters.
 				#~ axb.set_yscale('log')
-				#~ axb.plot(var[symbol[count]+'CGOD'], var[symbol[count]+'CGOCTOTHTL'], linestyle = '-',color = 'green')
-				#~ axb.plot(var[symbol[count]+'CGOD'], var[symbol[count]+'CLOV'], linestyle = '-',color = 'red')
+				#~ axb.plot(var[symbol_total[count]+'CGOD'], var[symbol_total[count]+'CGOCTOTHTL'], linestyle = '-',color = 'green')
+				#~ axb.plot(var[symbol_total[count]+'CGOD'], var[symbol_total[count]+'CLOV'], linestyle = '-',color = 'red')
 				#~ 
 			labels = [r'$c>o$', '$c=o$', '$c<o$']
 			colors = ['yellowgreen', 'gold', 'lightskyblue']
 			explode=(0, 0, 0)
-			axa[count1,count2].pie(var[symbol[count]+'Final'], explode = explode, 
+			axa[count1,count2].pie(var_wd[symbol_wd[count]+'Final'], explode = explode, 
 			labels = labels, colors = colors, autopct = '%1.1f%%', shadow = True, 
 			startangle = 90,)
 			axa[count1,count2].set_aspect('equal')
@@ -540,9 +619,9 @@ def ratio_weekday(symbol, cTo = True, input_path = None, output_path = None):
 				print 'counter ---> ', count
 				fig1.delaxes(axa[1,2])
 				fig1.suptitle(r"Ratio of close to open prices based on week days")
-				fig1.savefig(main_output_path, format = 'png')
+				fig1.savefig(main_output_path+'.png', format = 'png')
 				fig1, axa = plt.subplots(2,3)
 		plt.show()
-		print 'The output path is ---> ', main_output_path
-	#~ if cTo == False: #	It will find the cMoThMl ratio (close minus open to high minus low).
-
+	print '-------------------> The End <----------------------' 
+	print dic_total[1]['KOtCGO']
+	
