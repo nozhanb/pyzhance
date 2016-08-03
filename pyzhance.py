@@ -441,12 +441,17 @@ def ratio_weekday(symbol_wd, symbol_total ,cTo = True, input_path_wd = None,
 	if cTo == True:	#	Then it will find the ratio of Close to Open price.
 		dic_wd = []
 		dic_total = []
+		
+		cutter1 = []
+		cutter2 = []
+		cutter3 = []
+		
 		count = 0
 		count1 = 0
 		count2 = 0		
 		count3 = 0
+		count6 = 0
 		fig1, axa = plt.subplots(2,3)
-		#~ fig2, axb = plt.subplots(1,1)
 
 		for i in symbol_wd:
 			if input_path_wd is None:
@@ -524,8 +529,9 @@ def ratio_weekday(symbol_wd, symbol_total ,cTo = True, input_path_wd = None,
 			var_wd[symbol_wd[count]+'FE'].append(float(len(var_wd[symbol_wd[count]+'CEO']))/float(len(date)))
 			var_wd[symbol_wd[count]+'FL'].append(float(len(var_wd[symbol_wd[count]+'CLO']))/float(len(date)))
 			var_wd[symbol_wd[count]+'Final'] = var_wd[symbol_wd[count]+'FG'] + var_wd[symbol_wd[count]+'FE'] + var_wd[symbol_wd[count]+'FL']
-
-			if count % 5 == 0:
+			
+			cutter1.append(count)
+			if len(cutter1) % 5 == 0:
 				counter = 0
 				for i in symbol_total:
 					if input_path_total is None:
@@ -597,11 +603,11 @@ def ratio_weekday(symbol_wd, symbol_total ,cTo = True, input_path_wd = None,
 					var_total[symbol_total[counter]+'tFinal'] = var_total[symbol_total[counter]+'tFG'] + \
 					var_total[symbol_total[counter]+'tFE'] + var_total[symbol_total[counter]+'tFL']
 					
+					dic_total.append(var_total)
+					
 					counter += 1
 			
-			dic_wd.append(var_wd)
-			dic_total.append(var_total)
-			
+			dic_wd.append(var_wd)			
 			#~ if count == 4:
 				#~ print 
 				#~ print min(var[symbol_total[count]+'CGOCTOTHTL']), "< CGOCTOTHTL <" , max(var[symbol_total[count]+'CGOCTOTHTL'])
@@ -621,29 +627,33 @@ def ratio_weekday(symbol_wd, symbol_total ,cTo = True, input_path_wd = None,
 			startangle = 90,)
 			axa[count1,count2].set_aspect('equal')
 			axa[count1,count2].set_title(days[count3], fontsize=10)
+			cutter2.append(count)	#	I add this line to use it as a cutter in the following if statement.
 			
 			count2 += 1
 			if count2 == 3:
 				count1 += 1
 				count2 = 0
-			count3 += 1
-			if count % 5 == 0:
+			count3 += 1		#	count3 is used for counting days of the week.
+			
+			if len(cutter2) % 5 == 0:
 				count1 = 0
 				count2 = 0
 				count3 = 0
 				fig1.delaxes(axa[1,2])
-				fig1.suptitle(r"Ratio of close to open prices based on week days")
+				fig1.suptitle(r"close to open price-ratio based on week days for " + symbol_total[count6])
 				fig1.savefig(main_output_path+'.png', format = 'png')
-				fig1, axa = plt.subplots(2,3)
-
- 	#~ plt.ion()
+				if len(cutter2) < len(symbol_wd):	#	If this "if statement" (and the similar one below) 
+					fig1, axa = plt.subplots(2,3)	#	is removed there will be two more empty figures.
+				count6 += 1
+			count += 1
+			
+	#~ plt.ion()
  	count4 = 0
  	count5 = 0
- 	count6 = 0
+ 	count7 = 0
 	fig2, axb = plt.subplots(2,3)
-	cutter = []
 	for dic, key in zip(range(len(dic_wd)), symbol_wd):
-		cutter.append(dic)
+		cutter3.append(dic)
 		x_ax = dic_wd[dic][key+'CGOD']
 		y_ax = dic_wd[dic][key+'CGOCTOTHTL']
 		axb[count4,count5].plot(x_ax, y_ax, linestyle = '-', color = 'green')
@@ -653,10 +663,13 @@ def ratio_weekday(symbol_wd, symbol_total ,cTo = True, input_path_wd = None,
 			count4 += 1
 			count5 = 0
 
-		if len(cutter) % 5 == 0:
+		if len(cutter3) % 5 == 0:
 			count4 = 0
 			count5 = 0
-			fig2.suptitle(r"CGOCTOTHTL" + ' for ' + key[0:3])
-			fig2.savefig(main_output_path+'CGOCTOTHTL' + key[0:3] +'.png', format = 'png')
-			plt.show()
-			fig2, axb = plt.subplots(2,3)
+			fig2.delaxes(axb[1,2])
+			fig2.suptitle(r"CGOCTOTHTL" + ' for ' + symbol_total[count7])
+			fig2.savefig(main_output_path+'CGOCTOTHTL' + symbol_total[count7] +'.png', format = 'png')
+			if len(cutter3) < len(dic_wd):
+				fig2, axb = plt.subplots(2,3)
+			count7 += 1
+	plt.show()
