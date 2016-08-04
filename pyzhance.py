@@ -451,6 +451,7 @@ def ratio_weekday(symbol_wd, symbol_total ,cTo = True, input_path_wd = None,
 		count2 = 0		
 		count3 = 0
 		count6 = 0
+		counter = 0
 		fig1, axa = plt.subplots(2,3)
 
 		for i in symbol_wd:
@@ -473,7 +474,7 @@ def ratio_weekday(symbol_wd, symbol_total ,cTo = True, input_path_wd = None,
 			symbol_wd[count]+'CLOC' :  [], symbol_wd[count]+'CLOH' :  [], symbol_wd[count]+'CLOL' : [], 
 			symbol_wd[count]+'CLOV' :  [], symbol_wd[count]+'CGOCTOTHTL': [], symbol_wd[count]+'CGOD' : [],
 			symbol_wd[count]+'CLOCTO' :[], symbol_wd[count]+'CLOHTL' :  [], symbol_wd[count]+'CLOCTOTHTL' : [],
-			symbol_wd[count]+'CLOD' : []}
+			symbol_wd[count]+'CLOD' : [], symbol_wd[count]+'CGOCTOTHTL_AV': [], symbol_wd[count]+'CLOCTOTHTL_AV': []}
 			
 			dataArrayDay = numpy.genfromtxt(fname = main_input_path_wd , delimiter = ',',
 			dtype = [('date','i4'),('open','f3'),('high','f3'),('low','f3'),
@@ -530,84 +531,129 @@ def ratio_weekday(symbol_wd, symbol_total ,cTo = True, input_path_wd = None,
 			var_wd[symbol_wd[count]+'FL'].append(float(len(var_wd[symbol_wd[count]+'CLO']))/float(len(date)))
 			var_wd[symbol_wd[count]+'Final'] = var_wd[symbol_wd[count]+'FG'] + var_wd[symbol_wd[count]+'FE'] + var_wd[symbol_wd[count]+'FL']
 			
+			#	symbol_total averaging section
+			cc = 0
+			for ii in range(len(var_wd[symbol_wd[count]+'CGOCTOTHTL'])):
+				aa = var_wd[symbol_wd[count]+'CGOCTOTHTL'][ii]
+				cc = cc + aa
+			var_wd[symbol_wd[count]+'CGOCTOTHTL_AV'].append(float(cc)/float(len(var_wd[symbol_wd[count]+'CGOCTOTHTL'])))
+			#~ print 'This is the total sum for ' + i + '-------> ', cc 
+			#~ print 'This is the average ' + i + '------> ', var_wd[symbol_wd[count]+'CGOCTOTHTL_AV']
+			#~ print 
+			dd = 0
+			for jj in range(len(var_wd[symbol_wd[count]+'CLOCTOTHTL'])):
+				bb = abs(var_wd[symbol_wd[count]+'CLOCTOTHTL'][jj])
+				dd = dd + bb
+			var_wd[symbol_wd[count]+'CLOCTOTHTL_AV'].append(float(cc)/float(len(var_wd[symbol_wd[count]+'CLOCTOTHTL'])))
+			#~ print 'This is the total sum ' + i + '-------> ', dd
+			#~ print 'This is the average ' + i + '------> ', var_wd[symbol_wd[count]+'CLOCTOTHTL_AV']
+			#~ print 
+			
 			cutter1.append(count)
+			
 			if len(cutter1) % 5 == 0:
-				counter = 0
-				for i in symbol_total:
-					if input_path_total is None:
-						main_input_path_total = os.path.join(os.getcwd(), i)
-					elif input_path_total is not None:
-						main_input_path_total = os.path.join(os.path.expanduser(input_path_total), i)
+				if input_path_total is None:
+					main_input_path_total = os.path.join(os.getcwd(), symbol_total[counter])
+				elif input_path_total is not None:
+					main_input_path_total = os.path.join(os.path.expanduser(input_path_total), symbol_total[counter])
 
-					var_total = {symbol_total[counter]+'tCGO' :  [], symbol_total[counter]+'tCEO' :  [], symbol_total[counter]+'tCLO' : [],
-					symbol_total[counter]+'tFG' :   [], symbol_total[counter]+'tFE' :   [], symbol_total[counter]+'tFL' : [],
-					symbol_total[counter]+'tFcounternal': [], symbol_total[counter]+'tCGOCTO': [], symbol_total[counter]+'tCGOHTL' : [],
-					symbol_total[counter]+'tCGOO' : [], symbol_total[counter]+'tCGOC' : [], symbol_total[counter]+'tCGOH' : [],
-					symbol_total[counter]+'tCGOL' : [], symbol_total[counter]+'tCGOV' : [], symbol_total[counter]+'tCLOO' : [], 
-					symbol_total[counter]+'tCLOC' : [], symbol_total[counter]+'tCLOH' : [], symbol_total[counter]+'tCLOL' : [], 
-					symbol_total[counter]+'tCLOV' : [], symbol_total[counter]+'tCGOCTOTHTL': [], symbol_total[counter]+'tCGOD' : [],
-					symbol_total[counter]+'tCLOCTO' : [], symbol_total[counter]+'tCLOHTL' : [], symbol_total[counter]+'tCLOCTOTHTL' : [],
-					symbol_total[counter]+'tCLOD' : []}
-					
-					
-					dataArrayTotal = numpy.genfromtxt(fname = main_input_path_total , delimiter = ',',
-					dtype = [('date','i4'),('open','f3'),('high','f3'),('low','f3'),
-							('close','f3'),('volume','i4'),('adjclose','f3')])
+				var_total = {symbol_total[counter]+'tCGO' :  [], symbol_total[counter]+'tCEO' :  [], symbol_total[counter]+'tCLO' : [],
+				symbol_total[counter]+'tFG' :   [], symbol_total[counter]+'tFE' :   [], symbol_total[counter]+'tFL' : [],
+				symbol_total[counter]+'tFcounternal': [], symbol_total[counter]+'tCGOCTO': [], symbol_total[counter]+'tCGOHTL' : [],
+				symbol_total[counter]+'tCGOO' : [], symbol_total[counter]+'tCGOC' : [], symbol_total[counter]+'tCGOH' : [],
+				symbol_total[counter]+'tCGOL' : [], symbol_total[counter]+'tCGOV' : [], symbol_total[counter]+'tCLOO' : [], 
+				symbol_total[counter]+'tCLOC' : [], symbol_total[counter]+'tCLOH' : [], symbol_total[counter]+'tCLOL' : [], 
+				symbol_total[counter]+'tCLOV' : [], symbol_total[counter]+'tCGOCTOTHTL': [], symbol_total[counter]+'tCGOD' : [],
+				symbol_total[counter]+'tCLOCTO' : [], symbol_total[counter]+'tCLOHTL' : [], symbol_total[counter]+'tCLOCTOTHTL' : [],
+				symbol_total[counter]+'tCLOD' : [], symbol_total[counter]+'tCGOCTOTHTL_AV': [],symbol_total[counter]+'tCLOCTOTHTL_AV': []}
+				
+				
+				dataArrayTotal = numpy.genfromtxt(fname = main_input_path_total , delimiter = ',',
+				dtype = [('date','i4'),('open','f3'),('high','f3'),('low','f3'),
+						('close','f3'),('volume','i4'),('adjclose','f3')])
+	
+				date = []
+				openn = []	#	openn because python will confuse open with the function "open".
+				high = []
+				low = []
+				close = []
+				volume = []
+				adjclose = []
+				
+				date = dataArrayTotal['date']
+				openn = dataArrayTotal['open']
+				high = dataArrayTotal['high']
+				low = dataArrayTotal['low']
+				close = dataArrayTotal['close']
+				volume = dataArrayTotal['volume']
+				adjclose = dataArrayTotal['adjclose']
 		
-					date = []
-					openn = []	#	openn because python will confuse open with the function "open".
-					high = []
-					low = []
-					close = []
-					volume = []
-					adjclose = []
-					
-					date = dataArrayTotal['date']
-					openn = dataArrayTotal['open']
-					high = dataArrayTotal['high']
-					low = dataArrayTotal['low']
-					close = dataArrayTotal['close']
-					volume = dataArrayTotal['volume']
-					adjclose = dataArrayTotal['adjclose']
-			
-					for j in range(len(date)):
-						val = float(close[j])/float(openn[j])
-						if val > 1.0:
-							var_total[symbol_total[counter]+'tCGO'].append(val)
-							var_total[symbol_total[counter]+'tCGOD'].append(date[j])
-							var_total[symbol_total[counter]+'tCGOO'].append(openn[j])
-							var_total[symbol_total[counter]+'tCGOC'].append(close[j])
-							var_total[symbol_total[counter]+'tCGOH'].append(high[j])
-							var_total[symbol_total[counter]+'tCGOL'].append(low[j])
-							var_total[symbol_total[counter]+'tCGOV'].append(volume[j]*10**(-7))			
-							var_total[symbol_total[counter]+'tCGOCTO'].append(float(close[j])/float(openn[j]))
-							var_total[symbol_total[counter]+'tCGOHTL'].append(float(high[j])/float(low[j]))
-							var_total[symbol_total[counter]+'tCGOCTOTHTL'].append(float(close[j]-openn[j])/float(high[j]-low[j]))
-						elif val == 1.0:
-							var_total[symbol_total[counter]+'tCEO'].append(val)
-						else:
-							var_total[symbol_total[counter]+'tCLO'].append(val)
-							var_total[symbol_total[counter]+'tCLOD'].append(date[j])
-							var_total[symbol_total[counter]+'tCLOO'].append(openn[j])
-							var_total[symbol_total[counter]+'tCLOC'].append(close[j])
-							var_total[symbol_total[counter]+'tCLOH'].append(high[j])
-							var_total[symbol_total[counter]+'tCLOL'].append(low[j])
-							var_total[symbol_total[counter]+'tCLOV'].append(volume[j]*10**(-7))			
-							var_total[symbol_total[counter]+'tCLOCTO'].append(float(close[j])/float(openn[j]))
-							var_total[symbol_total[counter]+'tCLOHTL'].append(float(high[j])/float(low[j]))
-							var_total[symbol_total[counter]+'tCLOCTOTHTL'].append(float(close[j]-openn[j])/float(high[j]-low[j]))
+				for j in range(len(date)):
+					val = float(close[j])/float(openn[j])
+					if val > 1.0:
+						var_total[symbol_total[counter]+'tCGO'].append(val)
+						var_total[symbol_total[counter]+'tCGOD'].append(date[j])
+						var_total[symbol_total[counter]+'tCGOO'].append(openn[j])
+						var_total[symbol_total[counter]+'tCGOC'].append(close[j])
+						var_total[symbol_total[counter]+'tCGOH'].append(high[j])
+						var_total[symbol_total[counter]+'tCGOL'].append(low[j])
+						var_total[symbol_total[counter]+'tCGOV'].append(volume[j]*10**(-7))			
+						var_total[symbol_total[counter]+'tCGOCTO'].append(float(close[j])/float(openn[j]))
+						var_total[symbol_total[counter]+'tCGOHTL'].append(float(high[j])/float(low[j]))
+						var_total[symbol_total[counter]+'tCGOCTOTHTL'].append(float(close[j]-openn[j])/float(high[j]-low[j]))
+					elif val == 1.0:
+						var_total[symbol_total[counter]+'tCEO'].append(val)
+					else:
+						var_total[symbol_total[counter]+'tCLO'].append(val)
+						var_total[symbol_total[counter]+'tCLOD'].append(date[j])
+						var_total[symbol_total[counter]+'tCLOO'].append(openn[j])
+						var_total[symbol_total[counter]+'tCLOC'].append(close[j])
+						var_total[symbol_total[counter]+'tCLOH'].append(high[j])
+						var_total[symbol_total[counter]+'tCLOL'].append(low[j])
+						var_total[symbol_total[counter]+'tCLOV'].append(volume[j]*10**(-7))			
+						var_total[symbol_total[counter]+'tCLOCTO'].append(float(close[j])/float(openn[j]))
+						var_total[symbol_total[counter]+'tCLOHTL'].append(float(high[j])/float(low[j]))
+						var_total[symbol_total[counter]+'tCLOCTOTHTL'].append(float(close[j]-openn[j])/float(high[j]-low[j]))
+						
 
-					var_total[symbol_total[counter]+'tFG'].append(float(len(var_total[symbol_total[counter]+'tCGO']))/float(len(date)))
-					var_total[symbol_total[counter]+'tFE'].append(float(len(var_total[symbol_total[counter]+'tCEO']))/float(len(date)))
-					var_total[symbol_total[counter]+'tFL'].append(float(len(var_total[symbol_total[counter]+'tCLO']))/float(len(date)))
-					var_total[symbol_total[counter]+'tFinal'] = var_total[symbol_total[counter]+'tFG'] + \
-					var_total[symbol_total[counter]+'tFE'] + var_total[symbol_total[counter]+'tFL']
-					
-					dic_total.append(var_total)
-					
-					counter += 1
+				var_total[symbol_total[counter]+'tFG'].append(float(len(var_total[symbol_total[counter]+'tCGO']))/float(len(date)))
+				var_total[symbol_total[counter]+'tFE'].append(float(len(var_total[symbol_total[counter]+'tCEO']))/float(len(date)))
+				var_total[symbol_total[counter]+'tFL'].append(float(len(var_total[symbol_total[counter]+'tCLO']))/float(len(date)))
+				var_total[symbol_total[counter]+'tFinal'] = var_total[symbol_total[counter]+'tFG'] + \
+				var_total[symbol_total[counter]+'tFE'] + var_total[symbol_total[counter]+'tFL']
+				
+				#	symbol_total averaging section
+				cc = 0
+				for ii in range(len(var_total[symbol_total[counter]+'tCGOCTOTHTL'])):
+					aa = var_total[symbol_total[counter]+'tCGOCTOTHTL'][ii]
+					cc = cc + aa
+				var_total[symbol_total[counter]+'tCGOCTOTHTL_AV'].append(float(cc)/float(len(var_total[symbol_total[counter]+'tCGOCTOTHTL'])))
+				emp = []	#	I introduce this empty list to use it to find the variance.
+				for iii in range(len(var_total[symbol_total[counter]+'tCGOCTOTHTL'])):
+					emp.append((var_total[symbol_total[counter]+'tCGOCTOTHTL'][iii] - cc) ** 2)
+					#~ print len(var_total[symbol_total[counter]+'tCGOCTOTHTL'][iii])
+				varG = float(sum(emp))/float(len(var_total[symbol_total[counter]+'tCGOCTOTHTL']))
+				stdG = numpy.sqrt(varG)
+				print len(var_total[symbol_total[counter]+'tCGOCTOTHTL'])
+				#~ print 'The variance and standard deviation ----->', float(sum(emp)), float(len(var_total[symbol_total[counter]+'tCGOCTOTHTL'])), varG, stdG
+				#~ print 'This is the total sum ' + symbol_total[counter] + '-------> ', cc 
+				#~ print 'This is the average ' + symbol_total[counter] + '------> ', var_total[symbol_total[counter]+'tCGOCTOTHTL_AV']
+				#~ print 'Total days ----------> ', len(var_total[symbol_total[counter]+'tCGOCTOTHTL'])
+				dd = 0
+				for jj in range(len(var_total[symbol_total[counter]+'tCLOCTOTHTL'])):
+					bb = abs(var_total[symbol_total[counter]+'tCLOCTOTHTL'][jj])
+					dd = dd + bb
+				var_total[symbol_total[counter]+'tCLOCTOTHTL_AV'].append(float(cc)/float(len(var_total[symbol_total[counter]+'tCLOCTOTHTL'])))
+				#~ print 'This is the total sum ' + symbol_total[counter] + '-------> ', dd
+				#~ print 'This is the average ' + symbol_total[counter] + '------> ', var_total[symbol_total[counter]+'tCLOCTOTHTL_AV']				
+				#~ print 'Total days ----------> ', len(var_total[symbol_total[counter]+'tCLOCTOTHTL'])
+				
+				dic_total.append(var_total)
+				
+				counter += 1
 			
-			dic_wd.append(var_wd)			
+			dic_wd.append(var_wd)
+					
 			#~ if count == 4:
 				#~ print 
 				#~ print min(var[symbol_total[count]+'CGOCTOTHTL']), "< CGOCTOTHTL <" , max(var[symbol_total[count]+'CGOCTOTHTL'])
@@ -672,4 +718,8 @@ def ratio_weekday(symbol_wd, symbol_total ,cTo = True, input_path_wd = None,
 			if len(cutter3) < len(dic_wd):
 				fig2, axb = plt.subplots(2,3)
 			count7 += 1
-	plt.show()
+	#~ plt.show()
+
+	#~ if average == True:
+		
+
