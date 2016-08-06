@@ -537,14 +537,25 @@ def ratio_weekday(symbol_wd, symbol_total ,cTo = True, input_path_wd = None,
 				aa = var_wd[symbol_wd[count]+'CGOCTOTHTL'][ii]
 				cc = cc + aa
 			var_wd[symbol_wd[count]+'CGOCTOTHTL_AV'].append(float(cc)/float(len(var_wd[symbol_wd[count]+'CGOCTOTHTL'])))
+			empG = []	#	I introduce this empty list to use it to find the variance.
+			for iii in range(len(var_wd[symbol_wd[count]+'CGOCTOTHTL'])):
+				empG.append((var_wd[symbol_wd[count]+'CGOCTOTHTL'][iii] - var_wd[symbol_wd[count]+'CGOCTOTHTL_AV'][0]) ** 2)
+			varG = float(sum(empG))/float(len(var_wd[symbol_wd[count]+'CGOCTOTHTL']))
+			stdG = numpy.sqrt(varG)
+			print 'The variance and standard deviation CGO '+i+' ----->', var_wd[symbol_wd[count]+'CGOCTOTHTL_AV'][0], varG, stdG
 			#~ print 'This is the total sum for ' + i + '-------> ', cc 
-			#~ print 'This is the average ' + i + '------> ', var_wd[symbol_wd[count]+'CGOCTOTHTL_AV']
-			#~ print 
+
 			dd = 0
 			for jj in range(len(var_wd[symbol_wd[count]+'CLOCTOTHTL'])):
 				bb = abs(var_wd[symbol_wd[count]+'CLOCTOTHTL'][jj])
 				dd = dd + bb
 			var_wd[symbol_wd[count]+'CLOCTOTHTL_AV'].append(float(cc)/float(len(var_wd[symbol_wd[count]+'CLOCTOTHTL'])))
+			empL = []	#	I introduce this empty list to use it to find the variance.
+			for iii in range(len(var_wd[symbol_wd[count]+'CLOCTOTHTL'])):
+				empL.append((var_wd[symbol_wd[count]+'CLOCTOTHTL'][iii] - var_wd[symbol_wd[count]+'CLOCTOTHTL_AV'][0]) ** 2)
+			varL = float(sum(empL))/float(len(var_wd[symbol_wd[count]+'CLOCTOTHTL']))
+			stdL = numpy.sqrt(varL)
+			print 'The variance and standard deviation CLO '+i+' ----->', var_wd[symbol_wd[count]+'CLOCTOTHTL_AV'][0], varL, stdL
 			#~ print 'This is the total sum ' + i + '-------> ', dd
 			#~ print 'This is the average ' + i + '------> ', var_wd[symbol_wd[count]+'CLOCTOTHTL_AV']
 			#~ print 
@@ -628,25 +639,25 @@ def ratio_weekday(symbol_wd, symbol_total ,cTo = True, input_path_wd = None,
 					aa = var_total[symbol_total[counter]+'tCGOCTOTHTL'][ii]
 					cc = cc + aa
 				var_total[symbol_total[counter]+'tCGOCTOTHTL_AV'].append(float(cc)/float(len(var_total[symbol_total[counter]+'tCGOCTOTHTL'])))
-				emp = []	#	I introduce this empty list to use it to find the variance.
+				empG = []	#	I introduce this empty list to use it to find the variance.
 				for iii in range(len(var_total[symbol_total[counter]+'tCGOCTOTHTL'])):
-					emp.append((var_total[symbol_total[counter]+'tCGOCTOTHTL'][iii] - cc) ** 2)
-					#~ print len(var_total[symbol_total[counter]+'tCGOCTOTHTL'][iii])
-				varG = float(sum(emp))/float(len(var_total[symbol_total[counter]+'tCGOCTOTHTL']))
+					empG.append((var_total[symbol_total[counter]+'tCGOCTOTHTL'][iii] - var_total[symbol_total[counter]+'tCGOCTOTHTL_AV'][0]) ** 2)
+				varG = float(sum(empG))/float(len(var_total[symbol_total[counter]+'tCGOCTOTHTL']))
 				stdG = numpy.sqrt(varG)
-				print len(var_total[symbol_total[counter]+'tCGOCTOTHTL'])
-				#~ print 'The variance and standard deviation ----->', float(sum(emp)), float(len(var_total[symbol_total[counter]+'tCGOCTOTHTL'])), varG, stdG
-				#~ print 'This is the total sum ' + symbol_total[counter] + '-------> ', cc 
-				#~ print 'This is the average ' + symbol_total[counter] + '------> ', var_total[symbol_total[counter]+'tCGOCTOTHTL_AV']
-				#~ print 'Total days ----------> ', len(var_total[symbol_total[counter]+'tCGOCTOTHTL'])
+				#~ print 'The variance and standard deviation CGO ----->', var_total[symbol_total[counter]+'tCGOCTOTHTL_AV'][0], varG, stdG
+
 				dd = 0
 				for jj in range(len(var_total[symbol_total[counter]+'tCLOCTOTHTL'])):
 					bb = abs(var_total[symbol_total[counter]+'tCLOCTOTHTL'][jj])
 					dd = dd + bb
 				var_total[symbol_total[counter]+'tCLOCTOTHTL_AV'].append(float(cc)/float(len(var_total[symbol_total[counter]+'tCLOCTOTHTL'])))
-				#~ print 'This is the total sum ' + symbol_total[counter] + '-------> ', dd
-				#~ print 'This is the average ' + symbol_total[counter] + '------> ', var_total[symbol_total[counter]+'tCLOCTOTHTL_AV']				
-				#~ print 'Total days ----------> ', len(var_total[symbol_total[counter]+'tCLOCTOTHTL'])
+				empL = []	#	I introduce this empty list to use it to find the variance.
+				for iii in range(len(var_total[symbol_total[counter]+'tCLOCTOTHTL'])):
+					empL.append((var_total[symbol_total[counter]+'tCLOCTOTHTL'][iii] - var_total[symbol_total[counter]+'tCLOCTOTHTL_AV'][0]) ** 2)
+				varL = float(sum(empL))/float(len(var_total[symbol_total[counter]+'tCLOCTOTHTL']))
+				stdL = numpy.sqrt(varL)
+				#~ print 'The variance and standard deviation CLO ----->', var_total[symbol_total[counter]+'tCLOCTOTHTL_AV'][0], varL, stdL
+
 				
 				dic_total.append(var_total)
 				
