@@ -230,8 +230,8 @@ def data_downloader(symbol, startDate, endDate, readIn = False,
 
 import os
 
-def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None, 
-				symbol = None, outputPath = None, inputPath = None,
+def data_slicer(symbol, date_day, interval, inputFileName = None, 
+				outputPath = None, inputPath = None,
 				day = None, month = None, year = None,
 				letterSearch = False, letterDay = None, 
 				outputFileName = None):
@@ -246,25 +246,15 @@ def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None,
 	import numpy
 	import datetime
 
-
-	if symbol is not None:
-		symbolTwo = symbol
-	elif symbol is None:
-		inputFile = open(inputFileName, 'r')
-		symbolTwo = []
-		for line in inputFile:
-			symbolTwo.append(line.strip())
-		inputFile.close()
-
-	for inputs in symbolTwo:
-		if inputPath is not None:
-			inputPathFile = os.path.join(os.path.expanduser(inputPath),inputs)
-		elif inputPath is None:
-			inputPathFile = os.path.join(os.getcwd(),inputs)
-		if outputPath is None:
-			outputPath = os.getcwd()
-		elif outputPath is not None:
-			outputPath = os.path.expanduser(outputPath)
+	for inputs in symbol:
+		#~ if inputPath is not None:
+			#~ inputPathFile = os.path.join(os.path.expanduser(inputPath),inputs)
+		#~ elif inputPath is None:
+			#~ inputPathFile = os.path.join(os.getcwd(),inputs)
+		#~ if outputPath is None:
+			#~ outputPath = os.getcwd()
+		#~ elif outputPath is not None:
+			#~ outputPath = os.path.expanduser(outputPath)
 		#~ if outputFileName is None:
 			#~ outputFileName = os.path.join(os.getcwd(), inputs)
 		#~ elif outputFileName is not None:
@@ -272,145 +262,181 @@ def data_slicer(dateFormat = '%Y-%m-%d', inputFileName = None,
 			
 			
 		def date_converter(tag): # tag: German word for day.
+			dateFormat = '%Y-%m-%d'
 			convertedDate = datetime.datetime.strptime(tag,dateFormat)
 			ordinalDate = datetime.date.toordinal(convertedDate)
-			return ordinalDate		
-		
-		#	tag = date_converter(x,dateFormat)
+			return ordinalDate
+			print ordinalDate
 		
 		#	NOTE: Do NOT use the dtype argument or you will get the "Too many
 		#	values to unpack". The best way is to use the "strpdate2num" function 
 		#	and the "converters" argument as follows.
 
-		dataArray = numpy.genfromtxt(fname = inputPathFile, delimiter = ",", 
+		dataArray = numpy.genfromtxt(fname = inputs, delimiter = ",", 
 		dtype = [('date','i4'),('open','f3'),('high','f3'),('low','f3'),
 		('close','f3'),('volume','i4'),('adjclose','f3')],converters = {0:date_converter})
 		
-		date = []
-		openn = []	#	openn with "nn" because python will confuse it with the function open otherwise.
-		high = []
-		low = []
-		close = []
-		volume = []
-		adjclose = []
+		dic1 = {'date_{}'.format(inputs): dataArray['date'], 'open_{}'.format(inputs): dataArray['open'], 
+		'high_{}'.format(inputs): dataArray['high'], 'low_{}'.format(inputs): dataArray['low'], 
+		'close_{}'.format(inputs): dataArray['close'], 'volume_{}'.format(inputs): dataArray['volume'], 
+		'adjclose_{}'.format(inputs): dataArray['adjclose']}
 		
-		date = dataArray['date']
-		openn = dataArray['open']
-		high = dataArray['high']
-		low = dataArray['low']
-		close = dataArray['close']
-		volume = dataArray['volume']
-		adjclose = dataArray['adjclose']
-		
-		for mainCounter in range(len(year)):
-			n = mainCounter
-			ordinalDate = "%d%s" % (n,"tsnrhtdd"[(n/10%10!=1)*(n%10<4)*n%10::4])		
-			yCounter = 0
-			for yPair in year[mainCounter]:
-				if yCounter % 2 == 0:
-					yStart = yPair
-				if yCounter % 2 == 1:
-					yEnd = yPair
-				yCounter += 1
-			mCounter = 0
-			for mPair in month[mainCounter]:
-				if mCounter % 2 == 0:
-					mStart = mPair
-				if mCounter % 2 == 1:
-					mEnd = mPair
-				mCounter += 1
-			dCounter = 0
-			for dPair in day[mainCounter]:
-				if dCounter % 2 == 0:
-					dStart = dPair
-				if dCounter % 2 == 1:
-					dEnd = dPair
-				dCounter += 1
+		for sdate, edate in interval:
+			startdate1 = datetime.datetime.strptime(sdate, '%Y-%m-%d')
+			enddate1 = datetime.datetime.strptime(edate, '%Y-%m-%d')
+			startdate2 = datetime.date.toordinal(startdate1)
+			enddate2 =  datetime.date.toordinal(enddate1)
+			datearray = numpy.array(range(startdate2, enddate2 + 1))
 			
-			ordinalStartDate = datetime.date.toordinal(datetime.datetime.strptime(datetime.date(yStart, mStart, dStart).strftime(dateFormat), dateFormat))
-			ordinalEndDate = datetime.date.toordinal(datetime.datetime.strptime(datetime.date(yEnd, mEnd, dEnd).strftime(dateFormat), dateFormat))
-			startDateIndex = numpy.where(date == ordinalStartDate)
-			endDateIndex = numpy.where(date == ordinalEndDate)
-			indexLength = abs(endDateIndex[0] - startDateIndex[0])
 			
-			slicedDate = numpy.empty(shape = 0, dtype = int)
-			slicedOpen = numpy.empty(shape = 0, dtype = float)
-			slicedHigh = numpy.empty(shape = 0, dtype = float)
-			slicedLow = numpy.empty(shape = 0, dtype = float)
-			slicedClose = numpy.empty(shape = 0, dtype = float)
-			slicedVolume = numpy.empty(shape = 0, dtype = int)
-			slicedAdjclose = numpy.empty(shape = 0, dtype = float)
-			
-			counter = 0
-			for i in range(0, indexLength + 1):
-				if counter < indexLength + 1:
-					emptyDate = numpy.append(slicedDate, date[endDateIndex[0] + i])
-					emptyOpen = numpy.append(slicedOpen, openn[endDateIndex[0] + i])
-					emptyHigh = numpy.append(slicedHigh, high[endDateIndex[0] + i])
-					emptyLow = numpy.append(slicedLow, low[endDateIndex[0] + i])
-					emptyClose = numpy.append(slicedClose, close[endDateIndex[0] + i])
-					emptyVolume = numpy.append(slicedVolume, volume[endDateIndex[0] + i])
-					emptyAdjclose = numpy.append(slicedAdjclose, adjclose[endDateIndex[0] + i])
-				slicedDate = emptyDate
-				slicedOpen = emptyOpen
-				slicedHigh = emptyHigh
-				slicedLow = emptyLow
-				slicedClose = emptyClose
-				slicedVolume = emptyVolume
-				slicedAdjclose = emptyAdjclose
-				counter += 1
-				
-			if letterSearch == True:
-				letterDate = numpy.empty(shape = 0, dtype = int)
-				letterOpen = numpy.empty(shape = 0, dtype = float)
-				letterHigh = numpy.empty(shape = 0, dtype = float)
-				letterLow = numpy.empty(shape = 0, dtype = float)
-				letterClose = numpy.empty(shape = 0, dtype = float)
-				letterVolume = numpy.empty(shape = 0, dtype = int)
-				letterAdjclose = numpy.empty(shape = 0, dtype = float)
-				
-				#	Do not confuse "letterDate" with "letterDay".
-				letterCounter = 0
-				for ll in range(len(letterDay)):
-					n = ll
-					letterDate = numpy.empty(shape = 0, dtype = int)
-					letterOpen = numpy.empty(shape = 0, dtype = float)
-					letterHigh = numpy.empty(shape = 0, dtype = float)
-					letterLow = numpy.empty(shape = 0, dtype = float)
-					letterClose = numpy.empty(shape = 0, dtype = float)
-					letterVolume = numpy.empty(shape = 0, dtype = int)
-					letterAdjclose = numpy.empty(shape = 0, dtype = float)
-					#~ ordinalDay = "%d%s" % (n,"tsnrhtdd"[(n/10%10!=1)*(n%10<4)*n%10::4])
-					for length in range(len(slicedDate)):
-						notOrdinalDate = datetime.date.fromordinal(slicedDate[length]).strftime('%a')
-						if notOrdinalDate == letterDay[letterCounter]:
-							clearDate = numpy.append(letterDate, slicedDate[length])
-							clearOpen = numpy.append(letterOpen, slicedOpen[length])
-							clearHigh = numpy.append(letterHigh, slicedHigh[length])
-							clearLow = numpy.append(letterLow, slicedLow[length])
-							clearClose = numpy.append(letterClose, slicedClose[length])
-							clearVolume = numpy.append(letterVolume, slicedVolume[length])
-							clearAdjclose = numpy.append(letterAdjclose, slicedAdjclose[length])
-							
-							letterDate = clearDate
-							letterOpen = clearOpen
-							letterHigh = clearHigh
-							letterLow = clearLow
-							letterClose = clearClose
-							letterVolume = clearVolume
-							letterAdjclose = clearAdjclose
-					letterCounter += 1
+			for day in date_day:
+				if isinstance(day, tuple) == True:	#	this line checks to see if day object is list.
+					startdate3, enddate3 = day
+					if len(startdate3) ==  10:
+						startdate4 = datetime.datetime.strptime(startdate3, '%Y-%m-%d')
+						enddate4 = datetime.datetime.strptime(enddate3, '%Y-%m-%d')
+						startdate5 = datetime.date.toordinal(startdate4)
+						enddate5 =  datetime.date.toordinal(enddate4)
+						for count1 in range(len(dic1['date_{}'.format(inputs)])):
+							if startdate5 == dic1['date_{}'.format(inputs)][count1]:
+								index1 = count1
+							elif enddate5 == dic1['date_{}'.format(inputs)][count1]:
+								index2 = count1
+							with open(inputs+'_'+sdate+'_'+edate, 'w') as ftw:
+								for count2 in range(index1, index2 + 1):
+									ftw.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(dic1['date_{}'.format(inputs)][count2], 
+									dic1['open_{}'.format(inputs)][count2], dic1['high_{}'.format(inputs)][count2], 
+									dic1['low_{}'.format(inputs)][count2], dic1['close_{}'.format(inputs)][count2], 
+									dic1['volume_{}'.format(inputs)][count2], dic1['adjclose_{}'.format(inputs)][count2]))
 					
-					numpy.savetxt(inputs+ordinalDate+letterDay[n], numpy.c_[letterDate, letterOpen, letterHigh, letterLow, letterClose, letterVolume, letterAdjclose], fmt = ('%d','%.6f','%.6f','%.6f','%.6f','%d','%.6f'), delimiter = ',')
-			if letterSearch == False:
-				n = mainCounter
-				numpy.savetxt(inputs+ordinalDate, numpy.c_[slicedDate, slicedOpen, slicedHigh, slicedLow, slicedClose, slicedVolume, slicedAdjclose], fmt = ('%d','%.6f','%.6f','%.6f','%.6f','%d','%.6f'), delimiter = ',')
-		#~ if letterSearch == True:
-			#~ return 
-		#~ if letterSearch == False:
-			#~ return slicedDate, slicedOpen, slicedHigh, slicedLow, slicedClose, slicedVolume, slicedAdjclose	
+					elif len(startdate3) == 5:
+						startdate4 = datetime.datetime.strptime(startdate3, '%m-%d')
+						enddate4 = datetime.datetime.strptime(enddate3, '%m-%d')
+						startdate5 = datetime.date.toordinal(startdate4)
+						enddate5 =  datetime.date.toordinal(enddate4)
+						if startdate5 != enddate5:
+							startyear1 = startdate1.strftime('%Y')
+							endyear1 = enddate1.strftime('%Y')
+							for count3 in range(abs(int(startyear1) - int(endyear1)) + 1):
+								startdate6 = datetime.datetime.strptime(str(int(startyear1) + count3) +'-'+ startdate3,'%Y-%m-%d')
+								enddate6 = datetime.datetime.strptime(str(int(startyear1) + count3) +'-'+ enddate3,'%Y-%m-%d')
+								startdate7 = datetime.date.toordinal(startdate6)
+								enddate7 = datetime.date.toordinal(enddate6)
+								index = []
+								for count4 in list(reversed(range(len(dic1['date_{}'.format(inputs)])))):
+									if startdate7 == dic1['date_{}'.format(inputs)][count4]:
+										index3 = count4
+										index.append(index3)
+									elif enddate7 == dic1['date_{}'.format(inputs)][count4]:
+										index4 = count4
+										index.append(index4)
+								
+								with open(inputs+'_'+startdate3+'_'+enddate3, 'a') as ftw:
+									for count5 in range(index[0], index[1] + 3, -1):
+										ftw.write('{}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{}\t{}\n'.format(
+										dic1['date_{}'.format(inputs)][count5], dic1['open_{}'.format(inputs)][count5], 
+										dic1['high_{}'.format(inputs)][count5], dic1['low_{}'.format(inputs)][count5], 
+										dic1['close_{}'.format(inputs)][count5], dic1['adjclose_{}'.format(inputs)][count5], 
+										dic1['volume_{}'.format(inputs)][count5], datetime.date.fromordinal(dic1['date_{}'.format(inputs)][count5])))
+								
+						elif startdate5 == enddate5:
+							startyear2 = startdate1.strftime('%Y')
+							endyear2 = enddate1.strftime('%Y')
+							for count6 in range(abs(int(startyear2) - int(endyear2)) + 1):
+								startdate8 = datetime.datetime.strptime(str(int(startyear1) + count3) +'-'+ startdate3,'%Y-%m-%d')
+								startdate9 = datetime.date.toordinal(startdate8)
+								index = []
+								for count7 in list(reversed(range(len(dic1['date_{}'.format(inputs)])))):
+									if startdate9 == dic1['date_{}'.format(inputs)][count7]:
+										index5 = count7
+										index.append(index5)
+									with open(inputs+'_'+startdate3+'_'+enddate3, 'a') as ftw:
+										for val in index:
+											ftw.write('{}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{}\t{}\n'.format(
+											dic1['date_{}'.format(inputs)][val], dic1['open_{}'.format(inputs)][val], 
+											dic1['high_{}'.format(inputs)][val], dic1['low_{}'.format(inputs)][val], 
+											dic1['close_{}'.format(inputs)][val], dic1['adjclose_{}'.format(inputs)][val], 
+											dic1['volume_{}'.format(inputs)][val], datetime.date.fromordinal(dic1['date_{}'.format(inputs)][val])))
+					
+						else:
+							startdate10 = datetime.datetime.strptime(startdate3, '%d')
+							enddate8 = datetime.datetime.strptime(enddate3, '%d')
+							startdate11 = datetime.date.toordinal(startdate10)
+							enddate9 = datetime.date.toordinal(enddate8)	
+							if startdate11 != enddate9:
+								startyear3 = startdate1.strftime('%Y')
+								endyear3 = enddate1.strftime('%Y')
+								startmonth1 = startdate1.strftime('%m')
+								endmonth1 = enddate1.strftime('%m')
+								for count8 in range(abs(int(startyear3) - int(endyear3)) + 1):
+									if count8 == startyear3:
+										startmonth1 = startmonth1
+										end = 13
+									elif count8 == endyear3:
+										startmonth1 = 01
+										end = int(endmonth1)
+									else:
+										startmonth1 = '13' 
+										end = 13
+																					
+									for count9 in range(int(startmonth1), end):
+										startdate12 = datetime.datetime.strptime(str(int(startyear1) + count8) +'-'+ str(int(startmonth1) + count9) +'-'+ startdate3,'%Y-%m-%d')
+										enddate10 = datetime.datetime.strptime(str(int(startyear1) + count8) +'-'+ str(int(startmonth1) + count9) + '-' + enddate3,'%Y-%m-%d')
+										startdate13 = datetime.date.toordinal(startdate12)
+										enddate11 = datetime.date.toordinal(enddate10)
+										index = []
+										for count10 in list(reversed(range(len(dic1['date_{}'.format(inputs)])))):
+											if startdate14 == dic1['date_{}'.format(inputs)][count10]:
+												index6 = count10
+												index.append(count10)
+											elif enddate12 == dic1['date_{}'.format(inputs)][count10]:
+												index7 = count10
+												index.append(count10)
+												break
+											with open(inputs+'_'+startdate3+'_'+enddate3, 'a') as ftw:
+												for val2 in range(index[0], index[1] + 3, -1):
+													ftw.write('{}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{}\t{}\n'.format(
+													dic1['date_{}'.format(inputs)][val2], dic1['open_{}'.format(inputs)][val2], 
+													dic1['high_{}'.format(inputs)][val2], dic1['low_{}'.format(inputs)][val2], 
+													dic1['close_{}'.format(inputs)][val2], dic1['adjclose_{}'.format(inputs)][val2], 
+													dic1['volume_{}'.format(inputs)][val2], datetime.date.fromordinal(dic1['date_{}'.format(inputs)][val2])))
+								
+							elif startdate11 == enddate9:
+								startyear3 = startdate1.strftime('%Y')
+								endyear3 = enddate1.strftime('%Y')
+								startmonth1 = startdate1.strftime('%m')
+								endmonth1 = enddate1.strftime('%m')
+								for count11 in range(int(startyear3), int(endyear3) + 1):
+									if count11 == startyear3:
+										startmonth1 = startmonth1
+										end = 13
+									elif count11 == endyear3:
+										startmonth1 = 01
+										end = int(endmonth1)
+									else:
+										startmonth1 = '13' 
+										end = 13
+																					
+									for count12 in range(int(startmonth1), end):
+										startdate12 = datetime.datetime.strptime(str(int(startyear1) + count12) +'-'+ str(int(startmonth1) + count12) +'-'+ startdate3,'%Y-%m-%d')
+										startdate13 = datetime.date.toordinal(startdate12)
+										index = []
+										for count13 in list(reversed(range(len(dic1['date_{}'.format(inputs)])))):
+											if startdate14 == dic1['date_{}'.format(inputs)][count13]:
+												index8 = count13
+												index.append(count13)
+												break
+										with open(inputs+'_'+startdate3+'_'+enddate3, 'a') as ftw:
+											for val3 in index:
+												ftw.write('{}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{}\t{}\n'.format(
+												dic1['date_{}'.format(inputs)][val3], dic1['open_{}'.format(inputs)][val3], 
+												dic1['high_{}'.format(inputs)][val3], dic1['low_{}'.format(inputs)][val3], 
+												dic1['close_{}'.format(inputs)][val3], dic1['adjclose_{}'.format(inputs)][val3], 
+												dic1['volume_{}'.format(inputs)][val3], datetime.date.fromordinal(dic1['date_{}'.format(inputs)][val3])))
 
+					#~ if isinstance(element1, basestring) == False:	#	checks to see if element1 object is string.
 
+		
 import os
 import sys
 import numpy
@@ -422,109 +448,154 @@ rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 #~ plt.rc('text', usetex=True)
 #~ plt.rc('font', family='serif')
 
-#~ (symbol_wd = ['DIS0thMon','DIS0thTue','DIS0thWed','DIS0thThu','DIS0thFri', 'KO0thMon','KO0thTue','KO0thWed','KO0thThu','KO0thFri'], symbol_total = ['DIS','KO'], cTo = True, output_path = '~/nozhan/science/computation/data/finance/output/code/pyzhance/ratio_weekday')
+#~ (symbol = ['DIS0thMon','DIS0thTue','DIS0thWed','DIS0thThu','DIS0thFri','KO0thMon','KO0thTue','KO0thWed','KO0thThu','KO0thFri'],ratios = [('close','open')], cTo = True, output_path = '~/nozhan/science/computation/data/finance/output/code/pyzhance/ratio_weekday')
 
 
-def ratio_weekday(symbol_wd, symbol_total ,cTo = True, input_path_wd = None, 
-					input_path_total = None, output_path = None):
-	
+def ratio(symbol , input_path_wd = None, ratios = None, input_path_total = None, output_path = None, 
+			output_file = 'single', sign = 'minus', previous_day = 'ON'):
+
 	#	This function will find differeant ratios for different stocks 
 	#	based on weekdays.	cMoThMl
 	
-	#	symbol_wd: is the list of name of files where each file contains
-	#	the data of a symbol based on single week days of given interval.
-	#	symbol_total: is the list of name of files where each file contains
+	#	symbol_wd: is the list of file names where each file contains
+	#	the data of a symbol based on single week days of a given interval.
+	#	symbol_total: is the list of file names where each file contains
 	#	the data of a symbol for all days of a given interval.
-	
-	days = ['Mon','Tue','Wed','Thu','Fri']
-		
-	if cTo == True:	#	Then it will find the ratio of Close to Open price.
-		dic_wd = []
-		dic_total = []
-		
-		cutter1 = []
-		cutter2 = []
-		cutter3 = []
-		
-		count = 0
-		count1 = 0
-		count2 = 0		
-		count3 = 0
-		count6 = 0
-		counter = 0
-		fig1, axa = plt.subplots(2,3)
 
-		for i in symbol_wd:
-			if input_path_wd is None:
-				main_input_path_wd = os.path.join(os.getcwd(), i)
-			elif input_path_wd is not None:
-				main_input_path_wd = os.path.join(os.path.expanduser(input_path_wd), i)				
-			if output_path is None:
-				main_output_path = os.path.join(os.getcwd(), i)
-			elif output_path is not None:
-				main_output_path = os.path.join(os.path.expanduser(output_path), i)
-			
-			#	We creat a dictionary of different varibles.
-			
-			var_wd = {symbol_wd[count]+'CGO' : [], symbol_wd[count]+'CEO' : [], symbol_wd[count]+'CLO' : [],
-			symbol_wd[count]+'FG' :    [], symbol_wd[count]+'FE' :    [], symbol_wd[count]+'FL' : [],
-			symbol_wd[count]+'Final':  [], symbol_wd[count]+'CGOCTO': [], symbol_wd[count]+'CGOHTL' : [],
-			symbol_wd[count]+'CGOO' :  [], symbol_wd[count]+'CGOC' :  [], symbol_wd[count]+'CGOH' : [],
-			symbol_wd[count]+'CGOL' :  [], symbol_wd[count]+'CGOV' :  [], symbol_wd[count]+'CLOO' : [], 
-			symbol_wd[count]+'CLOC' :  [], symbol_wd[count]+'CLOH' :  [], symbol_wd[count]+'CLOL' : [], 
-			symbol_wd[count]+'CLOV' :  [], symbol_wd[count]+'CGOCTOTHTL': [], symbol_wd[count]+'CGOD' : [],
-			symbol_wd[count]+'CLOCTO' :[], symbol_wd[count]+'CLOHTL' :  [], symbol_wd[count]+'CLOCTOTHTL' : [],
-			symbol_wd[count]+'CLOD' : [], symbol_wd[count]+'CGOCTOTHTL_AV': [], symbol_wd[count]+'CLOCTOTHTL_AV': []}
-			
-			dataArrayDay = numpy.genfromtxt(fname = main_input_path_wd , delimiter = ',',
-			dtype = [('date','i4'),('open','f3'),('high','f3'),('low','f3'),
-					('close','f3'),('volume','i4'),('adjclose','f3')])
-			
-			date = []
-			openn = []	#	openn because python will confuse open with the function "open".
-			high = []
-			low = []
-			close = []
-			volume = []
-			adjclose = []
-			
-			date = dataArrayDay['date']
-			openn = dataArrayDay['open']
-			high = dataArrayDay['high']
-			low = dataArrayDay['low']
-			close = dataArrayDay['close']
-			volume = dataArrayDay['volume']
-			adjclose = dataArrayDay['adjclose']
-					
-			#	This part is where we calculate the ratio of close to open price
-			#	based on week days.
-			
-			for j in range(len(date)):
-				val = float(close[j])/float(openn[j])
-				if val > 1.0:
-					var_wd[symbol_wd[count]+'CGO'].append(val)
-					var_wd[symbol_wd[count]+'CGOD'].append(date[j])
-					var_wd[symbol_wd[count]+'CGOO'].append(openn[j])
-					var_wd[symbol_wd[count]+'CGOC'].append(close[j])
-					var_wd[symbol_wd[count]+'CGOH'].append(high[j])
-					var_wd[symbol_wd[count]+'CGOL'].append(low[j])
-					var_wd[symbol_wd[count]+'CGOV'].append(volume[j]*10**(-7))			
-					var_wd[symbol_wd[count]+'CGOCTO'].append(float(close[j])/float(openn[j]))
-					var_wd[symbol_wd[count]+'CGOHTL'].append(float(high[j])/float(low[j]))
-					var_wd[symbol_wd[count]+'CGOCTOTHTL'].append(float(close[j]-openn[j])/float(high[j]-low[j]))
-				elif val == 1.0:
-					var_wd[symbol_wd[count]+'CEO'].append(val)
+#####
+#NOTE:	If the user sets the previous_day == 'ON' then it is better to give the ratios argument a tuple such as ('open', 'close',
+#		'volume', 'volume') so one will not encounter division by zero. However, if one would like to set the previous-day to 'OFF'
+#		then it is recommanded to change the divison from two 'volume' in denominator to one (i.e. ratios = (open, close, volume). 
+#		This way the user will not get a error message or division by zero.
+#####
+	counter1 = 0
+	dic3 = {}
+	for i in symbol:
+		if input_path_wd is None:
+			main_input_path_wd = os.path.join(os.getcwd(), i)
+		elif input_path_wd is not None:
+			main_input_path_wd = os.path.join(os.path.expanduser(input_path_wd), i)				
+		if output_path is None:
+			main_output_path = os.path.join(os.getcwd(), i)
+		elif output_path is not None:
+			main_output_path = os.path.join(os.path.expanduser(output_path), i)
+		
+		#	We creat a dictionary of different varibles.
+		
+		#	POTPCGone stands for Present day's Open To Previous day's Close Greater than one.
+		#	PVTPVGone stands for Present day's Volume To Previous day's Volume for days with POTPCGone.
+		# 	The same holds true for other abbreviations of THIS group.
+		dataArrayDay = numpy.genfromtxt(fname = main_input_path_wd , delimiter = ',',
+		dtype = [('date','i4'),('open','f3'),('high','f3'),('low','f3'),
+				('close','f3'),('volume','i4'),('adjclose','f3')])
+		
+		dic1 = {'date_{}'.format(i): dataArrayDay['date'], 'open_{}'.format(i): dataArrayDay['open'], 
+		'high_{}'.format(i): dataArrayDay['high'], 'low_{}'.format(i): dataArrayDay['low'], 
+		'close_{}'.format(i): dataArrayDay['close'], 'volume_{}'.format(i): dataArrayDay['volume'], 
+		'adjclose_{}'.format(i): dataArrayDay['adjclose']}
+
+		#	This part is where we calculate different ratios
+		
+		counter2 = 0
+		for rr in ratios:
+			if previous_day == 'OFF':
+				if len(rr) == 2:
+					numerator = rr[0]
+					denominator = rr[1]
+					value = numpy.divide(dic1[numerator+'_{}'.format(i)], dic1[denominator+'_{}'.format(i)])
+				elif len(rr) == 3:
+					numerator1  = rr[0]
+					numerator2  = rr[1]
+					denominator = rr[2]
+					if sign == 'minus':
+						value = numpy.divide(dic1[numerator1+'_{}'.format(i)] - dic1[numerator2+'_{}'.format(i)], dic1[denominator+'_{}'.format(i)])
+					elif sign == 'plus':
+						value = numpy.divide(dic1[numerator1+'_{}'.format(i)] + dic1[numerator2+'_{}'.format(i)], dic1[denominator+'_{}'.format(i)])
 				else:
-					var_wd[symbol_wd[count]+'CLO'].append(val)
-					var_wd[symbol_wd[count]+'CLOD'].append(date[j])
-					var_wd[symbol_wd[count]+'CLOO'].append(openn[j])
-					var_wd[symbol_wd[count]+'CLOC'].append(close[j])
-					var_wd[symbol_wd[count]+'CLOH'].append(high[j])
-					var_wd[symbol_wd[count]+'CLOL'].append(low[j])
-					var_wd[symbol_wd[count]+'CLOV'].append(volume[j]*10**(-7))			
-					var_wd[symbol_wd[count]+'CLOCTO'].append(float(close[j])/float(openn[j]))
-					var_wd[symbol_wd[count]+'CLOHTL'].append(float(high[j])/float(low[j]))
-					var_wd[symbol_wd[count]+'CLOCTOTHTL'].append(float(close[j]-openn[j])/float(high[j]-low[j]))
+					numerator1  = rr[0]
+					numerator2  = rr[1]
+					denominator1 = rr[2]
+					denominator2 = rr[3]
+					if sign == 'minus':
+						value = numpy.divide(dic1[numerator1+'_{}'.format(i)] - dic1[numerator2+'_{}'.format(i)], dic1[denominator1+'_{}'.format(i)] - dic1[denominator2+'_{}'.format(i)])
+					elif sign == 'plus':
+						value = numpy.divide(dic1[numerator1+'_{}'.format(i)] + dic1[numerator2+'_{}'.format(i)], dic1[denominator1+'_{}'.format(i)] + dic1[denominator2+'_{}'.format(i)])
+
+			elif previous_day == 'ON':
+				if len(rr) == 4:
+					numerator1  = rr[0]		#	present day
+					numerator2  = rr[1]		#	previous day
+					denominator1 = rr[2]	#	present day 
+					denominator2 = rr[3]	#	previous day
+					if sign == 'minus':
+						value = numpy.divide(dic1[numerator1+'_{}'.format(i)][1:] - dic1[numerator2+'_{}'.format(i)][:len(dic1[numerator2+'_{}'.format(i)]) - 1], 
+						dic1[denominator1+'_{}'.format(i)][1:] - dic1[denominator2+'_{}'.format(i)][:len(dic1[denominator2+'_{}'.format(i)]) - 1])
+					elif sign == 'plus':
+						value = numpy.divide(dic1[numerator1+'_{}'.format(i)][1:] + dic1[numerator2+'_{}'.format(i)][:len(dic1[numerator2+'_{}'.format(i)]) - 1], 
+						dic1[denominator1+'_{}'.format(i)][1:] + dic1[denominator2+'_{}'.format(i)][:len(dic1[denominator2+'_{}'.format(i)]) - 1])
+
+			dic2 = {i + '_ratio': value}
+			dic3.update(dic2)
+			
+			#~ curly.append('{:011.6f}\t')
+			#~ if counter2 == len(ratios):
+				#~ curly.append('{:011.6f}\t\n') 
+			counter2 += 1
+			#~ for count4 in range(len(curly)):
+				#~ if count4 == 0:
+					#~ form1 = curly[count4]
+					#~ form = form1
+				#~ if count4 > 0:
+					#~ form1 =curly[count4]
+					#~ form = form + form1
+							
+		dic3.update(dic1)
+		with open(i + '_ratio', 'w') as ftw:	#	ftw stands for file to write!
+			if previous_day == 'OFF':
+				for count3 in range(len(dic3['date_{}'.format(i)])):
+					ftw.write("{}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{<:011.6f}\t{:011.6f}\t{:011.6f}\t{}\n".format(dic3['date_{}'.format(i)][count3], 
+					dic3['open_{}'.format(i)][count3], dic3['high_{}'.format(i)][count3], dic3['low_{}'.format(i)][count3], 
+					dic3['close_{}'.format(i)][count3], dic3[i + '_ratio'.format(i)][count3],dic3['adjclose_{}'.format(i)][count3], 
+					dic3['volume_{}'.format(i)][count3]))
+			elif previous_day == 'ON':
+				for count3 in range(len(dic3[i + '_ratio'.format(i)])):
+					ftw.write("{}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{}\n".format(dic3['date_{}'.format(i)][count3], 
+					dic3['open_{}'.format(i)][count3], dic3['high_{}'.format(i)][count3], dic3['low_{}'.format(i)][count3], 
+					dic3['close_{}'.format(i)][count3], dic3[i + '_ratio'.format(i)][count3],dic3['adjclose_{}'.format(i)][count3], 
+					dic3['volume_{}'.format(i)][count3]))
+		counter1 += 1
+
+
+	'''
+			for j in range(len(date)):
+				var_wd[symbol[count]+'date'].append(date[j])
+				var_wd[symbol[count]+'open'].append(openn[j])
+				var_wd[symbol[count]+'close'].append(close[j])
+				var_wd[symbol[count]+'high'].append(high[j])
+				var_wd[symbol[count]+'low'].append(low[j])
+				var_wd[symbol[count]+'volume'].append(volume[j])
+				var_wd[symbol[count]+'adjclose'].append(adjclose[j])
+
+				
+				var_wd[symbol_wd[count]+'CGOCTO'].append(float(close[j])/float(openn[j]))
+				var_wd[symbol_wd[count]+'CGOHTL'].append(float(high[j])/float(low[j]))
+				#~ var_wd[symbol_wd[count]+'CGOCTOTHTL'].append(float(close[j]-openn[j])/float(high[j]-low[j]))
+				var_wd[symbol_wd[count]+'CGOCTOTHTL'].append(float(high[j]/openn[j]))
+
+				if j > 0:
+					ratio1 = openn[j]/close[j-1]
+					if ratio1 > 1:
+						var_wd[symbol_wd[count]+'POTPCGone'].append(ratio1)
+						var_wd[symbol_wd[count]+'POTPCDGone'].append(date[j])
+						var_wd[symbol_wd[count]+'PVTPVGone'].append(float(volume[j])/float(volume[j-1]))
+					elif ratio1 == 1:
+						var_wd[symbol_wd[count]+'POTPCEone'].append(ratio1)
+						var_wd[symbol_wd[count]+'POTPCDEone'].append(date[j])
+						var_wd[symbol_wd[count]+'PVTPVEone'].append(float(volume[j])/float(volume[j-1]))
+					else:
+						var_wd[symbol_wd[count]+'POTPCLone'].append(ratio1)
+						var_wd[symbol_wd[count]+'POTPCDLone'].append(date[j])
+						var_wd[symbol_wd[count]+'PVTPVLone'].append(float(volume[j])/float(volume[j-1]))
 
 			var_wd[symbol_wd[count]+'FG'].append(float(len(var_wd[symbol_wd[count]+'CGO']))/float(len(date)))
 			var_wd[symbol_wd[count]+'FE'].append(float(len(var_wd[symbol_wd[count]+'CEO']))/float(len(date)))
@@ -537,28 +608,23 @@ def ratio_weekday(symbol_wd, symbol_total ,cTo = True, input_path_wd = None,
 				aa = var_wd[symbol_wd[count]+'CGOCTOTHTL'][ii]
 				cc = cc + aa
 			var_wd[symbol_wd[count]+'CGOCTOTHTL_AV'].append(float(cc)/float(len(var_wd[symbol_wd[count]+'CGOCTOTHTL'])))
+
 			empG = []	#	I introduce this empty list to use it to find the variance.
 			for iii in range(len(var_wd[symbol_wd[count]+'CGOCTOTHTL'])):
 				empG.append((var_wd[symbol_wd[count]+'CGOCTOTHTL'][iii] - var_wd[symbol_wd[count]+'CGOCTOTHTL_AV'][0]) ** 2)
 			varG = float(sum(empG))/float(len(var_wd[symbol_wd[count]+'CGOCTOTHTL']))
 			stdG = numpy.sqrt(varG)
-			print 'The variance and standard deviation CGO '+i+' ----->', var_wd[symbol_wd[count]+'CGOCTOTHTL_AV'][0], varG, stdG
-			#~ print 'This is the total sum for ' + i + '-------> ', cc 
 
 			dd = 0
 			for jj in range(len(var_wd[symbol_wd[count]+'CLOCTOTHTL'])):
 				bb = abs(var_wd[symbol_wd[count]+'CLOCTOTHTL'][jj])
 				dd = dd + bb
-			var_wd[symbol_wd[count]+'CLOCTOTHTL_AV'].append(float(cc)/float(len(var_wd[symbol_wd[count]+'CLOCTOTHTL'])))
+			var_wd[symbol_wd[count]+'CLOCTOTHTL_AV'].append(float(dd)/float(len(var_wd[symbol_wd[count]+'CLOCTOTHTL'])))
 			empL = []	#	I introduce this empty list to use it to find the variance.
 			for iii in range(len(var_wd[symbol_wd[count]+'CLOCTOTHTL'])):
 				empL.append((var_wd[symbol_wd[count]+'CLOCTOTHTL'][iii] - var_wd[symbol_wd[count]+'CLOCTOTHTL_AV'][0]) ** 2)
 			varL = float(sum(empL))/float(len(var_wd[symbol_wd[count]+'CLOCTOTHTL']))
 			stdL = numpy.sqrt(varL)
-			print 'The variance and standard deviation CLO '+i+' ----->', var_wd[symbol_wd[count]+'CLOCTOTHTL_AV'][0], varL, stdL
-			#~ print 'This is the total sum ' + i + '-------> ', dd
-			#~ print 'This is the average ' + i + '------> ', var_wd[symbol_wd[count]+'CLOCTOTHTL_AV']
-			#~ print 
 			
 			cutter1.append(count)
 			
@@ -576,7 +642,9 @@ def ratio_weekday(symbol_wd, symbol_total ,cTo = True, input_path_wd = None,
 				symbol_total[counter]+'tCLOC' : [], symbol_total[counter]+'tCLOH' : [], symbol_total[counter]+'tCLOL' : [], 
 				symbol_total[counter]+'tCLOV' : [], symbol_total[counter]+'tCGOCTOTHTL': [], symbol_total[counter]+'tCGOD' : [],
 				symbol_total[counter]+'tCLOCTO' : [], symbol_total[counter]+'tCLOHTL' : [], symbol_total[counter]+'tCLOCTOTHTL' : [],
-				symbol_total[counter]+'tCLOD' : [], symbol_total[counter]+'tCGOCTOTHTL_AV': [],symbol_total[counter]+'tCLOCTOTHTL_AV': []}
+				symbol_total[counter]+'tCLOD' : [], symbol_total[counter]+'tCGOCTOTHTL_AV': [],symbol_total[counter]+'tCLOCTOTHTL_AV': [],
+				symbol_total[counter]+'tPOTPCGone' : [], symbol_total[counter]+'tPOTPCEone' : [], symbol_total[counter]+'tPOTPCLone' : [],
+				symbol_total[counter]+'tPVTPVGone' : [], symbol_total[counter]+'tPVTPVEone' : [], symbol_total[counter]+'tPVTPVLone' : []}
 				
 				
 				dataArrayTotal = numpy.genfromtxt(fname = main_input_path_total , delimiter = ',',
@@ -608,7 +676,7 @@ def ratio_weekday(symbol_wd, symbol_total ,cTo = True, input_path_wd = None,
 						var_total[symbol_total[counter]+'tCGOC'].append(close[j])
 						var_total[symbol_total[counter]+'tCGOH'].append(high[j])
 						var_total[symbol_total[counter]+'tCGOL'].append(low[j])
-						var_total[symbol_total[counter]+'tCGOV'].append(volume[j]*10**(-7))			
+						var_total[symbol_total[counter]+'tCGOV'].append(volume[j])			
 						var_total[symbol_total[counter]+'tCGOCTO'].append(float(close[j])/float(openn[j]))
 						var_total[symbol_total[counter]+'tCGOHTL'].append(float(high[j])/float(low[j]))
 						var_total[symbol_total[counter]+'tCGOCTOTHTL'].append(float(close[j]-openn[j])/float(high[j]-low[j]))
@@ -621,11 +689,24 @@ def ratio_weekday(symbol_wd, symbol_total ,cTo = True, input_path_wd = None,
 						var_total[symbol_total[counter]+'tCLOC'].append(close[j])
 						var_total[symbol_total[counter]+'tCLOH'].append(high[j])
 						var_total[symbol_total[counter]+'tCLOL'].append(low[j])
-						var_total[symbol_total[counter]+'tCLOV'].append(volume[j]*10**(-7))			
+						var_total[symbol_total[counter]+'tCLOV'].append(volume[j])			
 						var_total[symbol_total[counter]+'tCLOCTO'].append(float(close[j])/float(openn[j]))
 						var_total[symbol_total[counter]+'tCLOHTL'].append(float(high[j])/float(low[j]))
 						var_total[symbol_total[counter]+'tCLOCTOTHTL'].append(float(close[j]-openn[j])/float(high[j]-low[j]))
 						
+
+					if j > 0:
+						ratio2 = float(openn[j])/float(close[j-1])
+						if ratio2 > 1:
+							var_total[symbol_total[counter]+'tPOTPCGone'].append(ratio2)
+							var_total[symbol_total[counter]+'tPVTPVGone'].append(float(volume[j])/float(volume[j-1]))
+							
+						elif ratio2 == 1:
+							var_total[symbol_total[counter]+'tPOTPCEone'].append(ratio2)
+							var_total[symbol_total[counter]+'tPVTPVEone'].append(float(volume[j])/float(volume[j-1]))
+						else:
+							var_total[symbol_total[counter]+'tPOTPCLone'].append(ratio2)
+							var_total[symbol_total[counter]+'tPVTPVLone'].append(float(volume[j])/float(volume[j-1]))
 
 				var_total[symbol_total[counter]+'tFG'].append(float(len(var_total[symbol_total[counter]+'tCGO']))/float(len(date)))
 				var_total[symbol_total[counter]+'tFE'].append(float(len(var_total[symbol_total[counter]+'tCEO']))/float(len(date)))
@@ -644,41 +725,89 @@ def ratio_weekday(symbol_wd, symbol_total ,cTo = True, input_path_wd = None,
 					empG.append((var_total[symbol_total[counter]+'tCGOCTOTHTL'][iii] - var_total[symbol_total[counter]+'tCGOCTOTHTL_AV'][0]) ** 2)
 				varG = float(sum(empG))/float(len(var_total[symbol_total[counter]+'tCGOCTOTHTL']))
 				stdG = numpy.sqrt(varG)
-				#~ print 'The variance and standard deviation CGO ----->', var_total[symbol_total[counter]+'tCGOCTOTHTL_AV'][0], varG, stdG
 
 				dd = 0
 				for jj in range(len(var_total[symbol_total[counter]+'tCLOCTOTHTL'])):
 					bb = abs(var_total[symbol_total[counter]+'tCLOCTOTHTL'][jj])
 					dd = dd + bb
-				var_total[symbol_total[counter]+'tCLOCTOTHTL_AV'].append(float(cc)/float(len(var_total[symbol_total[counter]+'tCLOCTOTHTL'])))
+				var_total[symbol_total[counter]+'tCLOCTOTHTL_AV'].append(float(dd)/float(len(var_total[symbol_total[counter]+'tCLOCTOTHTL'])))
 				empL = []	#	I introduce this empty list to use it to find the variance.
 				for iii in range(len(var_total[symbol_total[counter]+'tCLOCTOTHTL'])):
 					empL.append((var_total[symbol_total[counter]+'tCLOCTOTHTL'][iii] - var_total[symbol_total[counter]+'tCLOCTOTHTL_AV'][0]) ** 2)
 				varL = float(sum(empL))/float(len(var_total[symbol_total[counter]+'tCLOCTOTHTL']))
 				stdL = numpy.sqrt(varL)
-				#~ print 'The variance and standard deviation CLO ----->', var_total[symbol_total[counter]+'tCLOCTOTHTL_AV'][0], varL, stdL
-
 				
 				dic_total.append(var_total)
 				
 				counter += 1
 			
 			dic_wd.append(var_wd)
-					
-			#~ if count == 4:
-				#~ print 
-				#~ print min(var[symbol_total[count]+'CGOCTOTHTL']), "< CGOCTOTHTL <" , max(var[symbol_total[count]+'CGOCTOTHTL'])
-				#~ print "And the average value of CGOCTOTHTL is: ", sum(var[symbol_total[count]+'CGOCTOTHTL'])/len(var[symbol_total[count]+'CGOCTOTHTL'])
-				#~ print 
-			#~ #	This is where we find the average of a couple of prameters.
-				#~ axb.set_yscale('log')
-				#~ axb.plot(var[symbol_total[count]+'CGOD'], var[symbol_total[count]+'CGOCTOTHTL'], linestyle = '-',color = 'green')
-				#~ axb.plot(var[symbol_total[count]+'CGOD'], var[symbol_total[count]+'CLOV'], linestyle = '-',color = 'red')
-				#~ 
-			#~ plt.close('all')
+	
 			labels = [r'$c>o$', '$c=o$', '$c<o$']
 			colors = ['yellowgreen', 'gold', 'lightskyblue']
 			explode=(0, 0, 0)
+			axa[count1,count2].pie(var_wd[symbol_wd[count]+'Final'], explode = explode, 
+			labels = labels, colors = colors, autopct = '%1.1f%%', shadow = True, 
+			startangle = 90,)	
+			axa[count1,count2].set_aspect('equal')
+			axa[count1,count2].set_title(days[count3], fontsize=10)
+			cutter2.append(count)	#	I add this line to use it as a cutter in the following if statement.
+			
+			count2 += 1
+			if count2 == 3:
+				count1 += 1
+				count2 = 0
+			count3 += 1		#	count3 is used for counting days of the week.
+			
+			if len(cutter2) % 5 == 0:
+				count1 = 0
+				count2 = 0
+				count3 = 0
+				fig1.delaxes(axa[1,2])
+				fig1.suptitle(r"close to open price-ratio based on week days for " + symbol_total[count6])
+				fig1.savefig(main_output_path+'.png', format = 'png')
+				if len(cutter2) < len(symbol_wd):	#	If this "if statement" (and the similar one below) 
+					fig1, axa = plt.subplots(2,3)	#	gets removed there will be two more empty figures.
+				count6 += 1
+			count += 1
+				
+			#~ plt.ion()
+ 	count4 = 0
+ 	count5 = 0
+ 	count7 = 0
+	fig2, axb = plt.subplots(2,3)
+	for dic, key in zip(range(len(dic_wd)), symbol_wd):
+		cutter3.append(dic)
+#		x_ax = dic_wd[dic][key+'POTPCDGone']
+		y_ax = dic_wd[dic][key+'PVTPVLone']
+		x_ax = dic_wd[dic][key+'POTPCLone']
+		axb[count4,count5].plot(x_ax, y_ax, 'o', color = 'green')
+		#~ y_ax = dic_wd[dic][key+'CGOCTOTHTL']
+#		x_ax = dic_wd[dic][key+'POTPCDGone']
+#		z_ax = dic_wd[dic][key+'PVTPVGone']
+		#~ z_ax = [i/max(dic_wd[dic][key+'CGOV']) for i in dic_wd[dic][key+'CGOV']]
+#		axb[count4,count5].plot(x_ax, z_ax, linestyle = '-', color = 'red')
+
+		count5 += 1
+		if count5 == 3:	#	if statement for axis
+			count4 += 1
+			count5 = 0
+	
+		if len(cutter3) % 5 == 0:
+			count4 = 0
+			count5 = 0
+			fig2.delaxes(axb[1,2])
+			#~ fig2.suptitle(r"CGOCTOTHTL" + ' for ' + symbol_total[count7])
+			fig2.suptitle(r"CGOHmO" + ' for ' + symbol_total[count7])
+			fig2.savefig(main_output_path+'CGOCTOTHTL' + symbol_total[count7] +'.png', format = 'png')
+			if len(cutter3) < len(dic_wd):
+				fig2, axb = plt.subplots(2,3)
+			count7 += 1
+	plt.show()
+'''
+
+
+'''
 			axa[count1,count2].pie(var_wd[symbol_wd[count]+'Final'], explode = explode, 
 			labels = labels, colors = colors, autopct = '%1.1f%%', shadow = True, 
 			startangle = 90,)
@@ -700,7 +829,7 @@ def ratio_weekday(symbol_wd, symbol_total ,cTo = True, input_path_wd = None,
 				fig1.suptitle(r"close to open price-ratio based on week days for " + symbol_total[count6])
 				fig1.savefig(main_output_path+'.png', format = 'png')
 				if len(cutter2) < len(symbol_wd):	#	If this "if statement" (and the similar one below) 
-					fig1, axa = plt.subplots(2,3)	#	is removed there will be two more empty figures.
+					fig1, axa = plt.subplots(2,3)	#	gets removed there will be two more empty figures.
 				count6 += 1
 			count += 1
 			
@@ -711,9 +840,15 @@ def ratio_weekday(symbol_wd, symbol_total ,cTo = True, input_path_wd = None,
 	fig2, axb = plt.subplots(2,3)
 	for dic, key in zip(range(len(dic_wd)), symbol_wd):
 		cutter3.append(dic)
-		x_ax = dic_wd[dic][key+'CGOD']
-		y_ax = dic_wd[dic][key+'CGOCTOTHTL']
-		axb[count4,count5].plot(x_ax, y_ax, linestyle = '-', color = 'green')
+#		x_ax = dic_wd[dic][key+'POTPCDGone']
+		y_ax = dic_wd[dic][key+'PVTPVLone']
+		x_ax = dic_wd[dic][key+'POTPCLone']
+		axb[count4,count5].plot(x_ax, y_ax, 'o', color = 'green')
+		#~ y_ax = dic_wd[dic][key+'CGOCTOTHTL']
+#		x_ax = dic_wd[dic][key+'POTPCDGone']
+#		z_ax = dic_wd[dic][key+'PVTPVGone']
+		#~ z_ax = [i/max(dic_wd[dic][key+'CGOV']) for i in dic_wd[dic][key+'CGOV']]
+#		axb[count4,count5].plot(x_ax, z_ax, linestyle = '-', color = 'red')
 
 		count5 += 1
 		if count5 == 3:	#	if statement for axis
@@ -724,13 +859,12 @@ def ratio_weekday(symbol_wd, symbol_total ,cTo = True, input_path_wd = None,
 			count4 = 0
 			count5 = 0
 			fig2.delaxes(axb[1,2])
-			fig2.suptitle(r"CGOCTOTHTL" + ' for ' + symbol_total[count7])
+			#~ fig2.suptitle(r"CGOCTOTHTL" + ' for ' + symbol_total[count7])
+			fig2.suptitle(r"CGOHmO" + ' for ' + symbol_total[count7])
 			fig2.savefig(main_output_path+'CGOCTOTHTL' + symbol_total[count7] +'.png', format = 'png')
 			if len(cutter3) < len(dic_wd):
 				fig2, axb = plt.subplots(2,3)
 			count7 += 1
-	#~ plt.show()
+'''
 
-	#~ if average == True:
-		
 
