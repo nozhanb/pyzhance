@@ -288,7 +288,7 @@ def data_slicer(symbol, date_day, interval, inputFileName = None,
 			enddate2 =  datetime.date.toordinal(enddate1)
 			datearray = numpy.array(range(startdate2, enddate2 + 1))
 			
-			
+			# see if is works (ignore the sentence. I am testing)
 			for day in date_day:
 				if isinstance(day, tuple) == True:	#	this line checks to see if day object is list.
 					startdate3, enddate3 = day
