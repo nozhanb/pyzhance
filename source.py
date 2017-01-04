@@ -184,7 +184,7 @@ each plot needs a separate pair of X and Y axis): '''))
 
 axis1 = raw_input('Please type in your X and Y axis (follow this format: X1,Y1,X2,Y2, ... ): ')
 
-axis2 = axis1.split(',') # in the terminal user has to type NO space after ",".
+axis2 = axis1.split(',') # in the terminal user have to type NO space after ",".
 
 xaxis = []
 yaxis = []

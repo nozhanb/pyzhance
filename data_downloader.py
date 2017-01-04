@@ -1,8 +1,8 @@
 
 import os
 
-def data_downloader(readIn = False, readOut = False, intraday = False, symbol = None, 
-					startDate = None, endDate = None, outputPath = None,
+def data_downloader(startDate, endDate, readIn = False, readOut = False,
+					intraday = False, symbol = None, outputPath = None,
 					inputPathName = None, outputPathName = None, 
 					outputSymbol = None, inputFileName = None, 
 					outputFileName = None, message = False):
@@ -156,5 +156,4 @@ def data_downloader(readIn = False, readOut = False, intraday = False, symbol = 
 				
 			time.sleep(2)
 			counter += 1
-	
-	
+
