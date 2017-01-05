@@ -238,8 +238,10 @@ def data_slicer(symbol, date_day, interval, inputFileName = None,
 		
 		#	write = if "TRUE" the code will write out the result to a 
 		#	file. The default is "FALSE".
-		
-		#	Date,Open,High,Low,Close,Volume,Adj Close
+
+#	for the first part.
+#~ pyzhance.data_slicer(symbol = ['DIS'], date_day = [('2010-01-26','2011-07-27'),('2012-05-01', '2013-05-30'), ('2014-05-20','2016-06-30')], interval = [('2010-01-22','2016-07-01')])
+
 		
 	import os
 	import sys
@@ -289,7 +291,7 @@ def data_slicer(symbol, date_day, interval, inputFileName = None,
 			datearray = numpy.array(range(startdate2, enddate2 + 1))
 			
 			for day in date_day:
-				if isinstance(day, tuple) == True:	#	this line checks to see if day object is list.
+				if isinstance(day, tuple) == True:	#	this line checks to see if the day object is a list.
 					startdate3, enddate3 = day
 					if len(startdate3) ==  10:
 						startdate4 = datetime.datetime.strptime(startdate3, '%Y-%m-%d')
@@ -297,21 +299,34 @@ def data_slicer(symbol, date_day, interval, inputFileName = None,
 						startdate5 = datetime.date.toordinal(startdate4)
 						enddate5 =  datetime.date.toordinal(enddate4)
 						index = []
-						for count1 in list(reversed(range(len(dic1['date_{}'.format(inputs)])))):
-							if startdate5 == dic1['date_{}'.format(inputs)][count1]:
-								index1 = count1
-								index.append(index1)
-							elif enddate5 == dic1['date_{}'.format(inputs)][count1]:
-								index2 = count1
-								index.append(index2)
+						while len(index) < 2:
+							for count1 in list(reversed(range(len(dic1['date_{}'.format(inputs)])))):
+								if startdate5 == dic1['date_{}'.format(inputs)][count1]:
+									index1 = count1
+									index.append((index1, 0))
+								elif enddate5 == dic1['date_{}'.format(inputs)][count1]:
+									index2 = count1
+									index.append((index2, 1))
+							if len(index) == 1:
+								if index[0][1] == 0:
+									enddate5 += 1
+									index = []
+								elif index[0][1] == 1:
+									startdate5 += 1
+									index = []
+							elif len(index) == 0:
+								startdate5 += 1
+								enddate5 += 1
+								index = []
+							print len(index), index, '<-----'
 						with open(inputs+'_'+sdate+'_'+edate, 'a') as ftw:
-							for count2 in range(index[0], index[1] - 1, -1):
+							for count2 in range(index[0][0], index[1][0] - 1, -1):
 								ftw.write('{}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{}\t{}\n'.format(
 								dic1['date_{}'.format(inputs)][count2], dic1['open_{}'.format(inputs)][count2], 
 								dic1['high_{}'.format(inputs)][count2], dic1['low_{}'.format(inputs)][count2], 
 								dic1['close_{}'.format(inputs)][count2], dic1['adjclose_{}'.format(inputs)][count2], 
 								dic1['volume_{}'.format(inputs)][count2], datetime.date.fromordinal(dic1['date_{}'.format(inputs)][count2])))
-				
+	
 					elif len(startdate3) == 5:
 						startdate4 = datetime.datetime.strptime(startdate3, '%m-%d')
 						enddate4 = datetime.datetime.strptime(enddate3, '%m-%d')
