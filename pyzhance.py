@@ -266,7 +266,7 @@ def data_slicer(symbol, date_day, interval, inputFileName = None,
 			convertedDate = datetime.datetime.strptime(tag,dateFormat)
 			ordinalDate = datetime.date.toordinal(convertedDate)
 			return ordinalDate
-			print ordinalDate
+			#~ print ordinalDate
 		
 		#	NOTE: Do NOT use the dtype argument or you will get the "Too many
 		#	values to unpack". The best way is to use the "strpdate2num" function 
@@ -288,7 +288,6 @@ def data_slicer(symbol, date_day, interval, inputFileName = None,
 			enddate2 =  datetime.date.toordinal(enddate1)
 			datearray = numpy.array(range(startdate2, enddate2 + 1))
 			
-			# see if is works (ignore the sentence. I am testing)
 			for day in date_day:
 				if isinstance(day, tuple) == True:	#	this line checks to see if day object is list.
 					startdate3, enddate3 = day
@@ -297,18 +296,22 @@ def data_slicer(symbol, date_day, interval, inputFileName = None,
 						enddate4 = datetime.datetime.strptime(enddate3, '%Y-%m-%d')
 						startdate5 = datetime.date.toordinal(startdate4)
 						enddate5 =  datetime.date.toordinal(enddate4)
-						for count1 in range(len(dic1['date_{}'.format(inputs)])):
+						index = []
+						for count1 in list(reversed(range(len(dic1['date_{}'.format(inputs)])))):
 							if startdate5 == dic1['date_{}'.format(inputs)][count1]:
 								index1 = count1
+								index.append(index1)
 							elif enddate5 == dic1['date_{}'.format(inputs)][count1]:
 								index2 = count1
-							with open(inputs+'_'+sdate+'_'+edate, 'w') as ftw:
-								for count2 in range(index1, index2 + 1):
-									ftw.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(dic1['date_{}'.format(inputs)][count2], 
-									dic1['open_{}'.format(inputs)][count2], dic1['high_{}'.format(inputs)][count2], 
-									dic1['low_{}'.format(inputs)][count2], dic1['close_{}'.format(inputs)][count2], 
-									dic1['volume_{}'.format(inputs)][count2], dic1['adjclose_{}'.format(inputs)][count2]))
-					
+								index.append(index2)
+						with open(inputs+'_'+sdate+'_'+edate, 'a') as ftw:
+							for count2 in range(index[0], index[1] - 1, -1):
+								ftw.write('{}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{}\t{}\n'.format(
+								dic1['date_{}'.format(inputs)][count2], dic1['open_{}'.format(inputs)][count2], 
+								dic1['high_{}'.format(inputs)][count2], dic1['low_{}'.format(inputs)][count2], 
+								dic1['close_{}'.format(inputs)][count2], dic1['adjclose_{}'.format(inputs)][count2], 
+								dic1['volume_{}'.format(inputs)][count2], datetime.date.fromordinal(dic1['date_{}'.format(inputs)][count2])))
+				
 					elif len(startdate3) == 5:
 						startdate4 = datetime.datetime.strptime(startdate3, '%m-%d')
 						enddate4 = datetime.datetime.strptime(enddate3, '%m-%d')
@@ -330,7 +333,7 @@ def data_slicer(symbol, date_day, interval, inputFileName = None,
 									elif enddate7 == dic1['date_{}'.format(inputs)][count4]:
 										index4 = count4
 										index.append(index4)
-								
+								#I guess the with open line below needs to be indented by one block
 								with open(inputs+'_'+startdate3+'_'+enddate3, 'a') as ftw:
 									for count5 in range(index[0], index[1] + 3, -1):
 										ftw.write('{}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{}\t{}\n'.format(
