@@ -318,7 +318,6 @@ def data_slicer(symbol, date_day, interval, inputFileName = None,
 								startdate5 += 1
 								enddate5 += 1
 								index = []
-							print len(index), index, '<-----'
 						with open(inputs+'_'+sdate+'_'+edate, 'a') as ftw:
 							for count2 in range(index[0][0], index[1][0] - 1, -1):
 								ftw.write('{}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{}\t{}\n'.format(
@@ -335,22 +334,38 @@ def data_slicer(symbol, date_day, interval, inputFileName = None,
 						if startdate5 != enddate5:
 							startyear1 = startdate1.strftime('%Y')
 							endyear1 = enddate1.strftime('%Y')
+							#	some where around here I have to check the end of the interval to make sure if 
+							#	the end of interval falls in the total interval I have. Something like a loop or
+							#	... If it does not then I have to tell the code that ignore the last cycle and 
+							#	just print out the output based on what we have from the previous cycles.
 							for count3 in range(abs(int(startyear1) - int(endyear1)) + 1):
 								startdate6 = datetime.datetime.strptime(str(int(startyear1) + count3) +'-'+ startdate3,'%Y-%m-%d')
 								enddate6 = datetime.datetime.strptime(str(int(startyear1) + count3) +'-'+ enddate3,'%Y-%m-%d')
 								startdate7 = datetime.date.toordinal(startdate6)
 								enddate7 = datetime.date.toordinal(enddate6)
 								index = []
-								for count4 in list(reversed(range(len(dic1['date_{}'.format(inputs)])))):
-									if startdate7 == dic1['date_{}'.format(inputs)][count4]:
-										index3 = count4
-										index.append(index3)
-									elif enddate7 == dic1['date_{}'.format(inputs)][count4]:
-										index4 = count4
-										index.append(index4)
+								while len(index) < 2:
+									for count4 in list(reversed(range(len(dic1['date_{}'.format(inputs)])))):
+										if startdate7 == dic1['date_{}'.format(inputs)][count4]:
+											index3 = count4
+											index.append((index3,0))
+										elif enddate7 == dic1['date_{}'.format(inputs)][count4]:
+											index4 = count4
+											index.append((index4,1))
+									if len(index) == 1:
+										if index[0][1] == 0:
+											enddate7 += 1
+											index = []
+										elif index[0][1] == 1:
+											startdate7 += 1
+											index = []
+									elif len(index) == 0:
+										startdate7 += 1
+										enddate7 += 1
+										index = []
 								#I guess the with open line below needs to be indented by one block
 								with open(inputs+'_'+startdate3+'_'+enddate3, 'a') as ftw:
-									for count5 in range(index[0], index[1] + 3, -1):
+									for count5 in range(index[0][0], index[1][0] + 3, -1):
 										ftw.write('{}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{}\t{}\n'.format(
 										dic1['date_{}'.format(inputs)][count5], dic1['open_{}'.format(inputs)][count5], 
 										dic1['high_{}'.format(inputs)][count5], dic1['low_{}'.format(inputs)][count5], 
@@ -364,17 +379,20 @@ def data_slicer(symbol, date_day, interval, inputFileName = None,
 								startdate8 = datetime.datetime.strptime(str(int(startyear1) + count3) +'-'+ startdate3,'%Y-%m-%d')
 								startdate9 = datetime.date.toordinal(startdate8)
 								index = []
-								for count7 in list(reversed(range(len(dic1['date_{}'.format(inputs)])))):
-									if startdate9 == dic1['date_{}'.format(inputs)][count7]:
-										index5 = count7
-										index.append(index5)
-									with open(inputs+'_'+startdate3+'_'+enddate3, 'a') as ftw:
-										for val in index:
-											ftw.write('{}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{}\t{}\n'.format(
-											dic1['date_{}'.format(inputs)][val], dic1['open_{}'.format(inputs)][val], 
-											dic1['high_{}'.format(inputs)][val], dic1['low_{}'.format(inputs)][val], 
-											dic1['close_{}'.format(inputs)][val], dic1['adjclose_{}'.format(inputs)][val], 
-											dic1['volume_{}'.format(inputs)][val], datetime.date.fromordinal(dic1['date_{}'.format(inputs)][val])))
+								while len(index) < 1:
+									for count7 in list(reversed(range(len(dic1['date_{}'.format(inputs)])))):
+										if startdate9 == dic1['date_{}'.format(inputs)][count7]:
+											index5 = count7
+											index.append(index5)
+									if len(index) == 0:
+											startdate9 += 1
+								with open(inputs+'_'+startdate3+'_'+enddate3, 'a') as ftw:
+									for val in index:
+										ftw.write('{}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{}\t{}\n'.format(
+										dic1['date_{}'.format(inputs)][val], dic1['open_{}'.format(inputs)][val], 
+										dic1['high_{}'.format(inputs)][val], dic1['low_{}'.format(inputs)][val], 
+										dic1['close_{}'.format(inputs)][val], dic1['adjclose_{}'.format(inputs)][val], 
+										dic1['volume_{}'.format(inputs)][val], datetime.date.fromordinal(dic1['date_{}'.format(inputs)][val])))
 					
 						else:
 							startdate10 = datetime.datetime.strptime(startdate3, '%d')
@@ -403,22 +421,33 @@ def data_slicer(symbol, date_day, interval, inputFileName = None,
 										startdate13 = datetime.date.toordinal(startdate12)
 										enddate11 = datetime.date.toordinal(enddate10)
 										index = []
-										for count10 in list(reversed(range(len(dic1['date_{}'.format(inputs)])))):
-											if startdate14 == dic1['date_{}'.format(inputs)][count10]:
-												index6 = count10
-												index.append(count10)
-											elif enddate12 == dic1['date_{}'.format(inputs)][count10]:
-												index7 = count10
-												index.append(count10)
-												break
-											with open(inputs+'_'+startdate3+'_'+enddate3, 'a') as ftw:
-												for val2 in range(index[0], index[1] + 3, -1):
-													ftw.write('{}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{}\t{}\n'.format(
-													dic1['date_{}'.format(inputs)][val2], dic1['open_{}'.format(inputs)][val2], 
-													dic1['high_{}'.format(inputs)][val2], dic1['low_{}'.format(inputs)][val2], 
-													dic1['close_{}'.format(inputs)][val2], dic1['adjclose_{}'.format(inputs)][val2], 
-													dic1['volume_{}'.format(inputs)][val2], datetime.date.fromordinal(dic1['date_{}'.format(inputs)][val2])))
-								
+										while len(index) < 2:
+											for count10 in list(reversed(range(len(dic1['date_{}'.format(inputs)])))):
+												if startdate14 == dic1['date_{}'.format(inputs)][count10]:
+													index6 = count10
+													index.append((count10,0))
+												elif enddate12 == dic1['date_{}'.format(inputs)][count10]:
+													index7 = count10
+													index.append((count10,1))
+											if len(index) == 1:
+												if index[0][1] == 0:
+													enddate12 += 1
+													index = []
+												elif index[0][1] == 1:
+													startdate14 += 1
+													index = []
+											elif len(index) == 0:
+												startdate14 += 1
+												enddate12 += 1
+												index = []
+										with open(inputs+'_'+startdate3+'_'+enddate3, 'a') as ftw:
+											for val2 in range(index[0][0], index[1][0] + 3, -1):
+												ftw.write('{}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{}\t{}\n'.format(
+												dic1['date_{}'.format(inputs)][val2], dic1['open_{}'.format(inputs)][val2], 
+												dic1['high_{}'.format(inputs)][val2], dic1['low_{}'.format(inputs)][val2], 
+												dic1['close_{}'.format(inputs)][val2], dic1['adjclose_{}'.format(inputs)][val2], 
+												dic1['volume_{}'.format(inputs)][val2], datetime.date.fromordinal(dic1['date_{}'.format(inputs)][val2])))
+							
 							elif startdate11 == enddate9:
 								startyear3 = startdate1.strftime('%Y')
 								endyear3 = enddate1.strftime('%Y')
@@ -439,11 +468,13 @@ def data_slicer(symbol, date_day, interval, inputFileName = None,
 										startdate12 = datetime.datetime.strptime(str(int(startyear1) + count12) +'-'+ str(int(startmonth1) + count12) +'-'+ startdate3,'%Y-%m-%d')
 										startdate13 = datetime.date.toordinal(startdate12)
 										index = []
-										for count13 in list(reversed(range(len(dic1['date_{}'.format(inputs)])))):
-											if startdate14 == dic1['date_{}'.format(inputs)][count13]:
-												index8 = count13
-												index.append(count13)
-												break
+										while len(index) < 1 :
+											for count13 in list(reversed(range(len(dic1['date_{}'.format(inputs)])))):
+												if startdate14 == dic1['date_{}'.format(inputs)][count13]:
+													index8 = count13
+													index.append(count13)
+											if len(index) == 0:
+												startdate13 += 1
 										with open(inputs+'_'+startdate3+'_'+enddate3, 'a') as ftw:
 											for val3 in index:
 												ftw.write('{}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{}\t{}\n'.format(
