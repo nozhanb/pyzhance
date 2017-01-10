@@ -242,7 +242,11 @@ def data_slicer(symbol, date_day, interval, inputFileName = None,
 #	for the first part.
 #~ pyzhance.data_slicer(symbol = ['DIS'], date_day = [('2010-01-26','2011-07-27'),('2012-05-01', '2013-05-30'), ('2014-05-20','2016-06-30')], interval = [('2010-01-22','2016-07-01')])
 
-		
+#	for the second or third part.
+#~  pyzhance.data_slicer(symbol = ['DIS'], date_day = [('01-26','07-24')], interval = [('2010-01-22','2016-07-01')])
+
+
+
 	import os
 	import sys
 	import numpy
@@ -321,7 +325,7 @@ def data_slicer(symbol, date_day, interval, inputFileName = None,
 									index = []
 							with open(inputs+'_'+sdate+'_'+edate, 'a') as ftw:
 								for count2 in range(index[0][0], index[1][0] - 1, -1):
-									ftw.write('{}\t{}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{}\n'.format(
+									ftw.write('{},{},{:011.6f},{:011.6f},{:011.6f},{:011.6f},{:011.6f},{}\n'.format(
 									datetime.date.fromordinal(dic1['date_{}'.format(inputs)][count2]),
 									dic1['date_{}'.format(inputs)][count2], dic1['open_{}'.format(inputs)][count2], 
 									dic1['high_{}'.format(inputs)][count2], dic1['low_{}'.format(inputs)][count2], 
@@ -371,7 +375,7 @@ def data_slicer(symbol, date_day, interval, inputFileName = None,
 											index = []
 									with open(inputs+'_'+startdate3+'_'+enddate3, 'a') as ftw:
 										for count5 in range(index[0][0], index[1][0] - 1, -1):
-											ftw.write('{}\t{}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{}\n'.format(
+											ftw.write('{},{},{:011.6f},{:011.6f},{:011.6f},{:011.6f},{:011.6f},{}\n'.format(
 											datetime.date.fromordinal(dic1['date_{}'.format(inputs)][count5]), 
 											dic1['date_{}'.format(inputs)][count5], dic1['open_{}'.format(inputs)][count5], 
 											dic1['high_{}'.format(inputs)][count5], dic1['low_{}'.format(inputs)][count5], 
@@ -398,7 +402,7 @@ def data_slicer(symbol, date_day, interval, inputFileName = None,
 												startdate9 += 1
 									with open(inputs+'_'+startdate3+'_'+enddate3, 'a') as ftw:
 										for val in index:
-											ftw.write('{}\t{}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{}\n'.format(
+											ftw.write('{},{},{:011.6f},{:011.6f},{:011.6f},{:011.6f},{:011.6f},{}\n'.format(
 											datetime.date.fromordinal(dic1['date_{}'.format(inputs)][val]), 
 											dic1['date_{}'.format(inputs)][val], dic1['open_{}'.format(inputs)][val], 
 											dic1['high_{}'.format(inputs)][val], dic1['low_{}'.format(inputs)][val], 
@@ -455,7 +459,7 @@ def data_slicer(symbol, date_day, interval, inputFileName = None,
 													index = []
 											with open(inputs+'_'+startdate3+'_'+enddate3, 'a') as ftw:
 												for val2 in range(index[0][0], index[1][0] - 1, -1):
-													ftw.write('{}\t{}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{}\n'.format(
+													ftw.write('{},{},{:011.6f},{:011.6f},{:011.6f},{:011.6f},{:011.6f},{}\n'.format(
 													datetime.date.fromordinal(dic1['date_{}'.format(inputs)][val2]), 
 													dic1['date_{}'.format(inputs)][val2], dic1['open_{}'.format(inputs)][val2], 
 													dic1['high_{}'.format(inputs)][val2], dic1['low_{}'.format(inputs)][val2], 
@@ -494,7 +498,7 @@ def data_slicer(symbol, date_day, interval, inputFileName = None,
 													startdate13 += 1
 											with open(inputs+'_'+startdate3+'_'+enddate3, 'a') as ftw:
 												for val3 in index:
-													ftw.write('{}\t{}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{:011.6f}\t{}\n'.format(
+													ftw.write('{},{},{:011.6f},{:011.6f},{:011.6f},{:011.6f},{:011.6f},{}\n'.format(
 													datetime.date.fromordinal(dic1['date_{}'.format(inputs)][val3]), 
 													dic1['date_{}'.format(inputs)][val3], dic1['open_{}'.format(inputs)][val3], 
 													dic1['high_{}'.format(inputs)][val3], dic1['low_{}'.format(inputs)][val3], 
