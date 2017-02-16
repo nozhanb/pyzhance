@@ -52,6 +52,23 @@ def pieplot(inputfile, inputpath = None, ratio = None, sign = 'minus', previous_
 		olhgwgcclose = []
 		olhgwlcclose = []
 	
+		ogcMonord = []
+		olcMonord = []
+		ogcTueord = []
+		olcTueord = []
+		ogcWedord = []
+		olcWedord = []
+		ogcThuord = []
+		olcThuord = []
+		ogcFriord = []
+		olcFriord = []
+	
+		ogcFriclose = [] # I need to add another right below this for olc
+		
+		presopentoprevclose = []
+		presopentopresclose = []
+		presopentopreslow = []
+		
 		for count3 in range(len(dic1['odate_{}'.format(files)])):
 			odate = dic1['odate_{}'.format(files)][count3]
 			openn = '{:07.5f}'.format(dic1['open_{}'.format(files)][count3])
@@ -81,47 +98,66 @@ def pieplot(inputfile, inputpath = None, ratio = None, sign = 'minus', previous_
 			elif openn < high and openn > low:
 				if close > openn:
 					olhgwlc.append(count3)
-					olhgwlcday.append(datetime.datetime.strftime(datetime.date.fromordinal(odate), '%a'))
+					wdaycgo = datetime.datetime.strftime(datetime.date.fromordinal(odate), '%a')
+					olhgwlcday.append(wdaycgo)
 					olcodate.append(dic1['odate_{}'.format(files)][count3])
 					olhgwlcclose.append(dic1['close_{}'.format(files)][count3])
 					
+					if wdaycgo == 'Mon':
+						olcMonord.append(odate)
+					elif wdaycgo == 'Tue':
+						olcTueord.append(odate)
+					elif wdaycgo == 'Wed':
+						olcWedord.append(odate)
+					elif wdaycgo == 'Thu':
+						olcThuord.append(odate)
+					else:
+						olcFriord.append(odate)
+					
 				elif close < openn:
 					olhgwgc.append(count3)
-					olhgwgcday.append(datetime.datetime.strftime(datetime.date.fromordinal(odate), '%a'))
+					wdayogc = datetime.datetime.strftime(datetime.date.fromordinal(odate), '%a')
+					olhgwgcday.append(wdayogc)
 					ogcodate.append(dic1['odate_{}'.format(files)][count3])
 					olhgwgcclose.append(dic1['close_{}'.format(files)][count3])
+					
+					if wdayogc == 'Mon':
+						ogcMonord.append(odate)
+					elif wdayogc == 'Tue':
+						ogcTueord.append(odate)
+					elif wdayogc == 'Wed':
+						ogcWedord.append(odate)
+					elif wdayogc == 'Thu':
+						ogcThuord.append(odate)
+					else:
+						ogcFriord.append(odate)
+						ogcFriclose.append(close)
 					
 				elif openn == close:
 					olhgwec.append(count3)
 		
+		for count12 in range(len(dic1['odate_{}'.format(files)]) - 1):
+			prevdayclose = dic1['close_{}'.format(files)][count12]
+			presdayopen = dic1['open_{}'.format(files)][count12 + 1]
+			presdayclose = dic1['close_{}'.format(files)][count12 + 1]
+			presdaylow = dic1['low_{}'.format(files)][count12 + 1]
+			
+			if (presdayopen - prevdayclose) > 0:
+				presdayopentoprevdayclose = float(presdayopen)/float(prevdayclose)
+				presdayopentopresdayclose = float(presdayopen)/float(presdayclose)
+				presdayopentopresdaylow = float(presdayopen)/float(presdaylow)
+				presopentoprevclose.append(presdayopentoprevdayclose)
+				presopentopresclose.append(presdayopentopresdayclose)
+				presopentopreslow.append(presdayopentopresdaylow)
+		
 		dic3.update({'ogcodate_{}'.format(files): numpy.array(ogcodate)})
 		dic3.update({'olhgwgcclose_{}'.format(files): numpy.array(olhgwgcclose)})
-		
-		ogcMon = []
-		olcMon = []
-		ogcTue = []
-		olcTue = []
-		ogcWed = []
-		olcWed = []
-		ogcThu = []
-		olcThu = []
-		ogcFri = []
-		olcFri = []
-
-		for gdays in olhgwgcday:
-			if gdays == 'Mon':
-				ogcMon.append(gdays)
-			elif gdays == 'Tue':
-				ogcTue.append(gdays)
-			elif gdays == 'Wed':
-				ogcWed.append(gdays)
-			elif gdays == 'Thu':
-				ogcThu.append(gdays)
-			else:
-				ogcFri.append(gdays)
-				
-		#~ dic3.update{'{}_friodate'.format(ogcFri)}
-					
+		dic3.update({'ogcFriord_{}'.format(files):numpy.array(ogcFriord)})
+		dic3.update({'ogcFriclose_{}'.format(files):numpy.array(ogcFriclose)})
+		dic3.update({'presopentoprevclose_{}'.format(files): numpy.array(presopentoprevclose)})
+		dic3.update({'presopentopresclose_{}'.format(files): numpy.array(presopentopresclose)})
+		dic3.update({'presopentopreslow_{}'.format(files): numpy.array(presopentopreslow)})
+							
 		print
 		print 'oehec', ':', len(oehec),',', 'oehcgw', ':', len(oehcgw),',', 'oehcew', ':', len(oehcew),',',\
 				'oewec', ':', len(oewec),',', 'oewclh', ':', len(oewclh),',', 'oewceh', ':', len(oewceh),',',\
@@ -133,24 +169,12 @@ def pieplot(inputfile, inputpath = None, ratio = None, sign = 'minus', previous_
 		print '*'*20
 		print 
 		print 'The fraction of weekd days in which open price is greater than close price.'
-		print 'Mon: ', (float(len(ogcMon))/float(len(olhgwgcday)))*100 , '%', ',','Tue: ', (float(len(ogcTue))/float(len(olhgwgcday)))*100 , '%', ',','Wed: ', (float(len(ogcWed))/float(len(olhgwgcday)))*100 , '%',',',\
-				'Thu: ', (float(len(ogcThu))/float(len(olhgwgcday)))*100 , '%',',', 'Fri: ', (float(len(ogcFri))/float(len(olhgwgcday)))*100 , '%'
+		print 'Mon: ', (float(len(ogcMonord))/float(len(olhgwgcday)))*100 , '%', ',','Tue: ', (float(len(ogcTueord))/float(len(olhgwgcday)))*100 , '%', ',','Wed: ', (float(len(ogcWedord))/float(len(olhgwgcday)))*100 , '%',',',\
+				'Thu: ', (float(len(ogcThuord))/float(len(olhgwgcday)))*100 , '%',',', 'Fri: ', (float(len(ogcFriord))/float(len(olhgwgcday)))*100 , '%'
 		print
 		print '*'*20
 		print 'End:'
 		print '*'*20			
-	
-		for ldays in olhgwlcday:
-			if ldays == 'Mon':
-				olcMon.append(ldays)
-			elif ldays == 'Tue':
-				olcTue.append(ldays)
-			elif ldays == 'Wed':
-				olcWed.append(ldays)
-			elif ldays == 'Thu':
-				olcThu.append(ldays)
-			else:
-				olcFri.append(ldays)
 					
 		print 
 		print 'oehec', ':', len(oehec),',', 'oehcgw', ':', len(oehcgw),',', 'oehcew', ':', len(oehcew),',',\
@@ -163,16 +187,16 @@ def pieplot(inputfile, inputpath = None, ratio = None, sign = 'minus', previous_
 		print '*'*20
 		print 
 		print 'The fraction of weekd days in which open price is less than close price.'
-		print 'Mon: ', (float(len(olcMon))/float(len(olhgwlcday)))*100 , '%', ',','Tue: ', (float(len(olcTue))/float(len(olhgwlcday)))*100 , '%', ',','Wed: ', (float(len(olcWed))/float(len(olhgwlcday)))*100 , '%',',',\
-				'Thu: ', (float(len(olcThu))/float(len(olhgwlcday)))*100 , '%',',', 'Fri: ', (float(len(olcFri))/float(len(olhgwlcday)))*100 , '%'
+		print 'Mon: ', (float(len(olcMonord))/float(len(olhgwlcday)))*100 , '%', ',','Tue: ', (float(len(olcTueord))/float(len(olhgwlcday)))*100 , '%', ',','Wed: ', (float(len(olcWedord))/float(len(olhgwlcday)))*100 , '%',',',\
+				'Thu: ', (float(len(olcThuord))/float(len(olhgwlcday)))*100 , '%',',', 'Fri: ', (float(len(olcFriord))/float(len(olhgwlcday)))*100 , '%'
 		print
 		print '*'*20
 		print 'End:'
 		print '*'*20
 	
 		ogcdiff = []
-		for odate in range(len(ogcodate) -1 ):
-			diff = abs(ogcodate[odate] - ogcodate[odate + 1])
+		for odate in range(len(dic3['ogcFriord_{}'.format(files)]) -1 ):
+			diff = abs(dic3['ogcFriord_{}'.format(files)][odate] - dic3['ogcFriord_{}'.format(files)][odate + 1])
 			ogcdiff.append(diff)
 	
 		dayav = numpy.average(numpy.array(ogcdiff))
@@ -242,6 +266,7 @@ def pieplot(inputfile, inputpath = None, ratio = None, sign = 'minus', previous_
 					numerator2  = rr[1]		#	previous day
 					denominator1 = rr[2]	#	present day 
 					denominator2 = rr[3]	#	previous day
+					#### ONT FORGET TO FIX THIS PART. You have made some changes like adding the for loop.
 					if sign == 'minus':
 						for count11 in range(len(dic1['odate_{}'.format(files)]) - 1):
 							a = (float(dic1[numerator1+'_{}'.format(files)][count11]) - float(dic1[numerator2+'_{}'.format(files)][count11 + 1]))
@@ -268,21 +293,26 @@ def pieplot(inputfile, inputpath = None, ratio = None, sign = 'minus', previous_
 		dic3.update(dic1)
 	counter1 += 1
 	
+	print 'average = ', numpy.average(dic3['ratio_{}'.format(files)]), 'std = ', numpy.std(dic3['ratio_{}'.format(files)]), '<-------'
 	
 #	Plotting section:
 	x = [dic1['odate_{}'.format(files)], numpy.divide(dic1['close_{}'.format(files)], dic1['open_{}'.format(files)]), numpy.divide(dic1['close_{}'.format(files)][1:], dic1['close_{}'.format(files)][:len(dic1['close_{}'.format(files)]) - 1])]
 	y = [dic1['volume_{}'.format(files)], dic1['volume_{}'.format(files)][1:]]
 	fig1, axa = plt.subplots(1)
 	fig2, axb = plt.subplots(1)
+	fig3, axc = plt.subplots(1)
 	#~ par1 = axb.twinx()
 	#~ par2 = axb.twinx()
 
 	axa.plot(x[0], dic1['close_{}'.format(files)], 'g-')
-	axa.plot(dic3['ogcodate_{}'.format(files)], dic3['olhgwgcclose_{}'.format(files)], 'ro')
+	#~ axa.plot(dic3['ogcodate_{}'.format(files)], dic3['olhgwgcclose_{}'.format(files)], 'ro')
+	axa.plot(dic3['ogcFriord_{}'.format(files)], dic3['ogcFriclose_{}'.format(files)], 'bo')
+	
 	axb.plot(x[0][1:], dic3['ratio_' + files], 'g-')
 	axb.plot(x[0][1:], numpy.zeros(len(x[0]) - 1), 'r-')
-	#~ for count12 in range(len(x[0]) - 1):
-		#~ print x[0][count12], dic3['ratio_' + files][count12]
+
+	axc.plot(dic3['presopentoprevclose_{}'.format(files)], dic3['presopentopresclose_{}'.format(files)], 'go')
+	axc.plot(dic3['presopentoprevclose_{}'.format(files)], dic3['presopentopreslow_{}'.format(files)], 'ro')
 	
 	plt.show()
 
